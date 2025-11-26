@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bun</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <script src="/js/utilities.js"></script>
+</head>
+
+<body>
+  <section id="Playlist-Details">
+      <!-- Playlist details will go here -->
+  </section>
+  <button id="play-all-btn" class="btn btn-play btn-lavender" style="display: none;">Reproducir Todas</button>
+  <button onclick="window.location.href='/playlists';" class="btn btn-lavender">
+    Volver a las playlists
+  </button>
+
+  <div id="music-player" style="display: none; margin-top: 20px; text-align: center;">
+      <h3 id="current-song-title"></h3>
+      <audio id="audio-player" controls style="width: 100%;"></audio>
+      <div>
+          <button id="prev-btn" class="btn btn-lavender">Anterior</button>
+          <button id="next-btn" class="btn btn-lavender">Siguiente</button>
+      </div>
+  </div>
+  <hr>
+  <section id="Todas-las-Canciones">
+    <h2>Canciones de la Playlist</h2>
+    <div class="card-container" id="Contenedor-Canciones">
+      <!-- Las canciones se insertarán aquí dinámicamente -->
+    </div>
+  </section>
+</body>
+
+<script>
+    const detailsContainer = document.getElementById("Playlist-Details");
+    const songsContainer = document.getElementById("Contenedor-Canciones");
+    const cardColors = ['card-blue', 'card-green', 'card-yellow', 'card-red'];
+    let musicPlayer;
+
+    async function deleteSongFromPlaylist(songId) {
+        const isConfirmed = confirm('¿Estás seguro de que deseas quitar esta canción de la playlist?');
+        if (isConfirmed) {
+            try {
+                const playlistId = getIdFromUrl(-2);
+                const response = await fetch(`/playlists/${playlistId}/songs/${songId}`, {
+                    method: 'DELETE'
+                });
+                if (response.ok) {
+                    alert('Canción eliminada de la playlist.');
+                    const songElement = document.querySelector(`.card[data-song-id='${songId}']`);
+                    if(songElement) songElement.remove();
+                    if (musicPlayer) {
+                        musicPlayer.removeSong(songId);
+                    }
+                } else {
+                    const error = await response.json().catch(() => ({ message: 'Error al eliminar la canción.' }));
+                    throw new Error(error.message);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert(error.message);
+            }
+        }
+    }
+
+    async function fetchPlaylistDetails(playlistId) {
+        try {
+            const playlist = await fetchData(`/get/playlists/${playlistId}`);
+            detailsContainer.innerHTML = `
+                <h1>${playlist.name} </h1>
+                <p><strong>Descripción:</strong> <span>${playlist.description}</span></p>
+                <p><strong>Fecha de creación:</strong> <span>${new Date(playlist.creation_date).toLocaleDateString()}</span></p>
+                <p><strong>Última modificación:</strong> <span>${new Date(playlist.modification_date).toLocaleDateString()}</span></p>
+            `;
+        } catch (error) {
+            detailsContainer.innerHTML = '<p>Error al cargar los detalles de la playlist.</p>';
+            console.error(error);
+        }
+    }
+
+    async function fetchPlaylistSongs(playlistId) {
+        try {
+            const fetchedSongs = await fetchData(`/get/playlists/${playlistId}/songs`);
+            songsContainer.innerHTML = ''; // Clear previous content
+            if (fetchedSongs && fetchedSongs.length > 0) {
+                fetchedSongs.forEach((song, index) => {
+                    const songItem = document.createElement('div');
+                    const colorClass = cardColors[index % cardColors.length];
+                    songItem.className = `card ${colorClass}`;
+                    songItem.dataset.songId = song.id_song;
+                    songItem.innerHTML = `
+                        <a href="/songs/${song.id_song}">
+                            <img src="${song.cover_path}" alt="Cover art for ${song.title}">
+                            <h3>${song.title}</h3>
+                        </a>
+                        <button onclick="deleteSongFromPlaylist(${song.id_song})" class="btn btn-delete">
+                            Quitar de la playlist
+                        </button>
+                    `;
+                    songsContainer.appendChild(songItem);
+                });
+                if (musicPlayer) {
+                    musicPlayer.updateSongs(fetchedSongs);
+                }
+            } else {
+                songsContainer.innerHTML = '<p>No hay canciones en esta playlist.</p>';
+                if (musicPlayer) {
+                    musicPlayer.updateSongs([]);
+                }
+            }
+        } catch (error) {
+            songsContainer.innerHTML = '<p>Error al cargar las canciones de la playlist.</p>';
+            console.error(error);
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const playlistId = getIdFromUrl(-2);
+        if (!playlistId) {
+            detailsContainer.innerHTML = '<p>No se pudo determinar el ID de la playlist desde la URL.</p>';
+            return;
+        }
+        
+        musicPlayer = new MusicPlayer({
+            songs: [],
+            playerElementId: 'music-player',
+            audioElementId: 'audio-player',
+            titleElementId: 'current-song-title',
+            prevButtonId: 'prev-btn',
+            nextButtonId: 'next-btn',
+            playAllButtonId: 'play-all-btn'
+        });
+
+        Promise.all([
+            fetchPlaylistDetails(playlistId),
+            fetchPlaylistSongs(playlistId)
+        ]);
+    });
+</script>
+</html>

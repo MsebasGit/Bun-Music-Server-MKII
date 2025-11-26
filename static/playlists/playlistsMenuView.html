@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bun</title>
+  <script src="/js/utilities.js"></script>
+</head>
+<body>
+  <section id="Todas-las-Playlists">
+    <h1>Todas las Playlists</h1>
+    <button onclick="window.location.href='/playlists/new';" class="btn btn-submit">Crear playlist</button>
+    <div class="card-container" id="Contenedor-Playlists">
+      <!-- Las playlists se insertarán aquí dinámicamente -->
+    </div>
+  </section>
+
+  <script>
+    async function deletePlaylist(playlistId) {
+        if (confirm('¿Estás seguro de que quieres eliminar esta playlist?')) {
+            try {
+                await fetchData(`/playlists/${playlistId}`, { method: 'DELETE' });
+                alert('Playlist eliminada con éxito.');
+                window.location.reload();
+            } catch (error) {
+                alert('Error al eliminar la playlist: ' + error.message);
+            }
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const cardColors = ['card-blue', 'card-green', 'card-yellow', 'card-red'];
+        const playlistTemplate = (playlist, index) => {
+            const colorClass = cardColors[index % cardColors.length];
+            return `
+                <div class="card ${colorClass}" data-playlist-id="${playlist.id_playlist}">
+                    <a href="/playlists/${playlist.id_playlist}/songs">
+                        <h3>${playlist.name}</h3>
+                        <p>${playlist.description}</p>
+                    </a>
+                    <div class="playlist-buttons">
+                        <button onclick="window.location.href='/playlists/${playlist.id_playlist}/edit'" class="btn btn-edit">Editar</button>
+                        <button class="btn btn-delete" onclick="deletePlaylist(${playlist.id_playlist})">Borrar</button>
+                    </div>
+                </div>
+            `;
+        };
+
+        loadAndRenderGrid('/get/playlists', 'Contenedor-Playlists', playlistTemplate, 'Error al cargar las playlists.');
+    });
+  </script>
+</body>
+</html>

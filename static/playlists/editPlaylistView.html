@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Playlist</title>
+    <script src="/js/utilities.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1 style="text-align: center;">Editar playlist</h1>
+        <form id="editPlaylistForm" class="form-grid">
+            <div class="form-group">
+                <label for="name">Nombre:</label>
+                <input type="text" id="name" name="name" required>
+            </div>
+            <div class="form-group">
+                <label for="description">Descripción:</label>
+                <input type="text" id="description" name="description" required>
+            </div>
+            <button type="submit" class="btn edit-btn">Guardar Cambios</button>
+        </form>
+    </div>
+
+    <script>
+        async function loadAndPopulatePlaylistData(playlistId) {
+            try {
+                const playlist = await fetchData(`/get/playlists/${playlistId}`);
+                document.getElementById('name').value = playlist.name;
+                document.getElementById('description').value = playlist.description;
+            } catch (error) {
+                alert('Error al cargar datos: ' + error.message);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const playlistId = getIdFromUrl(-2); // Obtiene el ID de /playlists/{id}/edit
+
+            if (playlistId) {
+                loadAndPopulatePlaylistData(playlistId);
+                
+                const playlistForm = document.getElementById('editPlaylistForm');
+                playlistForm.addEventListener('submit', (event) => handleFormSubmit(
+                    event,
+                    playlistId,
+                    '/playlists',
+                    '¡Playlist actualizada con éxito!',
+                    '/playlists'
+                ));
+            } else {
+                alert("Error: No se pudo identificar la playlist a editar.");
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulario Canción</title>
+    <script src="/js/utilities.js"></script>
+</head>
+
+<body>
+    <h1 style="text-align: center;">Añadir una canción</h1>
+    <form action="/songs/new" method="post" enctype="multipart/form-data" class="form-grid">
+        <div class="form-group">
+            <label for="title">Título</label>
+            <input type="text" name="title" id="title" required>
+        </div>
+        <hr>
+
+        <div class="form-group">
+            <label for="language">Lenguaje</label>
+            <select type="text" name="language" id="language" required>
+                <option value="Albanés">Albanés</option>
+                <option value="Alemán">Alemán</option>
+                <option value="Árabe">Árabe</option>
+                <option value="Azerbaijani">Azerbaijani</option>
+                <option value="Bengalí">Bengalí</option>
+                <option value="Búlgaro">Búlgaro</option>
+                <option value="Catalán">Catalán</option>
+                <option value="Checo">Checo</option>
+                <option value="zh-Hans">Chino</option>
+                <option value="zh-Hant">Chino (tradicional)</option>
+                <option value="Coreano">Coreano</option>
+                <option value="Danés">Danés</option>
+                <option value="Eslovaco">Eslovaco</option>
+                <option value="Esloveno">Esloveno</option>
+                <option value="Español">Español</option>
+                <option value="Estonio">Estonio</option>
+                <option value="Finlandés">Finlandés</option>
+                <option value="Francés">Francés</option>
+                <option value="Griego">Griego</option>
+                <option value="Hebreo">Hebreo</option>
+                <option value="Hindi">Hindi</option>
+                <option value="Holandés">Holandés</option>
+                <option value="Húngaro">Húngaro</option>
+                <option value="Indonesio">Indonesio</option>
+                <option value="Inglés">Inglés</option>
+                <option value="Irlandés">Irlandés</option>
+                <option value="Italiano">Italiano</option>
+                <option value="Japonés">Japonés</option>
+                <option value="Kyrgyz">Kyrgyz</option>
+                <option value="Letón">Letón</option>
+                <option value="Lituano">Lituano</option>
+                <option value="Malayo">Malayo</option>
+                <option value="Noruego">Noruego</option>
+                <option value="Persa">Persa</option>
+                <option value="Polaco">Polaco</option>
+                <option value="Portugués">Portugués</option>
+                <option value="Rumano">Rumano</option>
+                <option value="Ruso">Ruso</option>
+                <option value="Serbio">Serbio</option>
+                <option value="Suecia">Suecia</option>
+                <option value="Tagalo">Tagalo</option>
+                <option value="Tailandés">Tailandés</option>
+                <option value="Turco">Turco</option>
+                <option value="Ucraniano">Ucraniano</option>
+                <option value="Urdu">Urdu</option>
+                <option value="Vietnamita">Vietnamita</option>
+            </select>
+        </div>
+        <hr>
+
+        <div class="form-group">
+            <label for="genre">Género Musical</label>
+            <input type="text" name="genre" id="genre" required>
+        </div>
+        <hr>
+
+        <div class="form-group">
+            <label for="song_file">Archivo de Canción</label>
+            <input type="file" name="song_file" id="song_file" accept="audio/mpeg, audio/wav" required>
+        </div>
+        <hr>
+
+        <div class="form-group">
+            <label for="cover_file">Portada</label>
+            <input type="file" name="cover_file" id="cover_file" accept="image/jpeg, image/png" required>
+        </div>
+        <hr>
+
+        <div class="form-group">
+            <label for="id_album">Álbum (opcional)</label>
+            <select name="id_album" id="id_album">
+                <option value="">Ninguno</option>
+            </select>
+        </div>
+
+        <hr>
+
+        <input type="submit" class="btn btn-submit" value="Enviar">
+    </form>
+    <button onclick="window.location.href='/me';" class="btn btn-browse">
+        Volver al studio...
+    </button>
+</body>
+
+<script>
+    document.addEventListener('DOMContentLoaded', async () => {
+        const slcAlbum = document.getElementById("id_album");
+        
+        try {
+            const artistInfo = await fetchData('/me/id');
+            if (!artistInfo || !artistInfo.id_artist) {
+                throw new Error('No se pudo obtener el ID del artista.');
+            }
+            const id_artist = artistInfo.id_artist;
+
+            const albums = await fetchData(`/get/artists/${id_artist}/albums`);
+            if (albums && albums.length > 0) {
+                const albumsHTML = albums.map(album =>
+                    `<option value="${album.id_album}">${album.name}</option>`
+                ).join('');
+                slcAlbum.innerHTML += albumsHTML;
+            }
+        } catch (error) {
+            console.error('Error al cargar los álbumes:', error);
+            // Optionally disable the select or show an error
+        }
+    });
+</script>
+
+</html>

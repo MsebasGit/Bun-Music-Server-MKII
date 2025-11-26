@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulario Playlist-Song</title>
+    <script src="/js/utilities.js"></script>
+</head>
+
+<body>
+    <form action="/playlists/songs/new" method="post">
+
+        <label for="id_playlist">Playlist</label>
+        <select type="number" id="id_playlist" name="id_playlist">
+            <option disabled>Selecciona una playlist</option>
+        </select>
+        <hr>
+
+        <label for="id_song">Canción</label>
+        <select type="number" id="id_song" name="id_song">
+            <option disabled>Selecciona una canción</option>
+        </select>
+        <hr>
+        <input type="hidden">
+        <input type="submit">
+    </form>
+</body>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const slcPlaylist = document.getElementById("id_playlist");
+        const slcSong = document.getElementById("id_song");
+
+        const fetchPlaylists = async () => {
+            try {
+                const playlists = await fetchData('/get/playlists');
+                populateSelect(slcPlaylist, playlists, 'id_playlist', 'name', 'Selecciona una playlist');
+            } catch (error) {
+                console.error('Error al cargar las playlists:', error);
+            }
+        };
+
+        const fetchSongs = async () => {
+            try {
+                const songs = await fetchData('/get/songs');
+                populateSelect(slcSong, songs, 'id_song', 'title', 'Selecciona una canción');
+            } catch (error) {
+                console.error('Error al cargar las canciones:', error);
+            }
+        };
+
+        Promise.all([fetchPlaylists(), fetchSongs()]);
+    });
+</script>
+
+</html>

@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Canción</title>
+    <script src="/js/utilities.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <h1 style="text-align: center;">Editar Canción</h1>
+        <form id="editSongForm" method="post" enctype="multipart/form-data" class="form-grid">
+            <div class="form-group">
+                <label for="title">Título</label>
+                <input type="text" name="title" id="title" required>
+            </div>
+            <hr>
+
+            <div class="form-group">
+                <label for="language">Lenguaje</label>
+                <select type="text" name="language" id="language" required>
+                    <option value="Albanés">Albanés</option>
+                    <option value="Alemán">Alemán</option>
+                    <option value="Árabe">Árabe</option>
+                    <option value="Azerbaijani">Azerbaijani</option>
+                    <option value="Bengalí">Bengalí</option>
+                    <option value="Búlgaro">Búlgaro</option>
+                    <option value="Catalán">Catalán</option>
+                    <option value="Checo">Checo</option>
+                    <option value="zh-Hans">Chino</option>
+                    <option value="zh-Hant">Chino (tradicional)</option>
+                    <option value="Coreano">Coreano</option>
+                    <option value="Danés">Danés</option>
+                    <option value="Eslovaco">Eslovaco</option>
+                    <option value="Esloveno">Esloveno</option>
+                    <option value="Español">Español</option>
+                    <option value="Estonio">Estonio</option>
+                    <option value="Finlandés">Finlandés</option>
+                    <option value="Francés">Francés</option>
+                    <option value="Griego">Griego</option>
+                    <option value="Hebreo">Hebreo</option>
+                    <option value="Hindi">Hindi</option>
+                    <option value="Holandés">Holandés</option>
+                    <option value="Húngaro">Húngaro</option>
+                    <option value="Indonesio">Indonesio</option>
+                    <option value="Inglés">Inglés</option>
+                    <option value="Irlandés">Irlandés</option>
+                    <option value="Italiano">Italiano</option>
+                    <option value="Japonés">Japonés</option>
+                    <option value="Kyrgyz">Kyrgyz</option>
+                    <option value="Letón">Letón</option>
+                    <option value="Lituano">Lituano</option>
+                    <option value="Malayo">Malayo</option>
+                    <option value="Noruego">Noruego</option>
+                    <option value="Persa">Persa</option>
+                    <option value="Polaco">Polaco</option>
+                    <option value="Portugués">Portugués</option>
+                    <option value="Rumano">Rumano</option>
+                    <option value="Ruso">Ruso</option>
+                    <option value="Serbio">Serbio</option>
+                    <option value="Suecia">Suecia</option>
+                    <option value="Tagalo">Tagalo</option>
+                    <option value="Tailandés">Tailandés</option>
+                    <option value="Turco">Turco</option>
+                    <option value="Ucraniano">Ucraniano</option>
+                    <option value="Urdu">Urdu</option>
+                    <option value="Vietnamita">Vietnamita</option>
+                </select>
+            </div>
+            <hr>
+
+            <div class="form-group">
+                <label for="genre">Género Musical</label>
+                <input type="text" name="genre" id="genre" required>
+            </div>
+            <hr>
+
+            <div class="form-group">
+                <label>Canción Actual:</label>
+                <span id="currentSongPath"></span>
+                <label for="song_file">Subir nueva canción (opcional)</label>
+                <input type="file" name="song_file" id="song_file" accept="audio/mpeg, audio/wav">
+                <input type="hidden" name="existing_song_path" id="existing_song_path">
+            </div>
+            <hr>
+
+            <div class="form-group">
+                <label>Portada Actual:</label>
+                <img id="currentCover" src="" alt="Portada actual"
+                    style="max-width: 100px; display: block; margin-bottom: 10px;">
+                <label for="cover_file">Subir nueva portada (opcional)</label>
+                <input type="file" name="cover_file" id="cover_file" accept="image/jpeg, image/png">
+                <input type="hidden" name="existing_cover_path" id="existing_cover_path">
+            </div>
+            <hr>
+
+            <div class="form-group">
+                <label for="id_album">Álbum (opcional)</label>
+                <select name="id_album" id="id_album">
+                    <option value="">Ninguno</option>
+                </select>
+            </div>
+            <hr>
+
+            <button type="submit" class="btn edit-btn">Guardar Cambios</button>
+        </form>
+    </div>
+
+    <script>
+        async function loadAndPopulateSongData(songId, id_artist) {
+            try {
+                const song = await fetchData(`/get/songs/${songId}`);
+
+                document.getElementById('title').value = song.title;
+                document.getElementById('language').value = song.language;
+                document.getElementById('genre').value = song.genre;
+                document.getElementById('currentSongPath').textContent = song.song_path;
+                document.getElementById('existing_song_path').value = song.song_path;
+                document.getElementById('currentCover').src = song.cover_path;
+                document.getElementById('existing_cover_path').value = song.cover_path;
+
+                await loadAlbumsAndSelect(song.id_album, id_artist);
+
+            } catch (error) {
+                alert('Error al cargar datos de la canción: ' + error.message);
+            }
+        }
+
+        async function loadAlbumsAndSelect(selectedAlbumId, id_artist) {
+            const slcAlbum = document.getElementById("id_album");
+            try {
+                const albums = await fetchData(`/get/artists/${id_artist}/albums`);
+                if (albums && albums.length > 0) {
+                    const albumsHTML = albums.map(album =>
+                        `<option value="${album.id_album}" ${album.id_album == selectedAlbumId ? 'selected' : ''}>${album.name}</option>`
+                    ).join('');
+                    slcAlbum.innerHTML += albumsHTML;
+                }
+            } catch (error) {
+                console.error('Error al cargar los álbumes:', error);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const songId = getIdFromUrl(-2); // De /songs/{id}/edit
+
+            if (songId) {
+                try {
+                    const artistInfo = await fetchData('/me/id');
+                    if (!artistInfo || !artistInfo.id_artist) {
+                        throw new Error('No se pudo obtener el ID del artista.');
+                    }
+                    const id_artist = artistInfo.id_artist;
+
+                    loadAndPopulateSongData(songId, id_artist);
+                    
+                    const songForm = document.getElementById('editSongForm');
+                    songForm.addEventListener('submit', (event) => handleFormSubmit(
+                        event,
+                        songId,
+                        '/songs',
+                        '¡Canción actualizada con éxito!',
+                        '/' // Redirigir a la página principal
+                    ));
+                } catch (error) {
+                    alert('Error: ' + error.message);
+                }
+            } else {
+                alert("Error: No se pudo identificar la canción a editar.");
+            }
+        });
+    </script>
+</body>
+
+</html>

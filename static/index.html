@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bun</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <script src="/js/utilities.js"></script>
+</head>
+
+<body>
+  <div class="search-container">
+    <input type="text" id="searchInput" placeholder="Buscar canciones, artistas, álbumes...">
+    <button id="searchButton" class="btn btn-browse">
+      <img src="/img/assets/search.png" alt="Search Icon" class="sidebar-icon">
+      Buscar
+    </button>
+  </div>
+  <section id="Todas-las-Canciones">
+    <h1>Todas las Canciones</h1>
+    <div class="card-container" id="Contenedor-Canciones">
+      <!-- Las canciones se insertarán aquí dinámicamente -->
+    </div>
+  </section>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const cardColors = ['card-blue', 'card-green', 'card-yellow', 'card-red'];
+      const songTemplate = (song, index) => {
+        const artists = song.artist_names ? `by ${song.artist_names}` : '';
+        const colorClass = cardColors[index % cardColors.length];
+        return `
+                <div class="card ${colorClass}" data-song-id="${song.id_song}">
+                    <a href="/songs/${song.id_song}">
+                        <img src="${song.cover_path}" alt="Cover art for ${song.title}">
+                        <h3>${song.title}</h3>
+                        <p>${artists}</p>
+                    </a>
+                </div>
+            `;
+      };
+
+      const songsContainerId = 'Contenedor-Canciones';
+      const initialEndpoint = '/get/songs';
+      const searchEndpoint = '/get/songs/search';
+      const errorMessage = 'Error al cargar las canciones.';
+
+      // Cargar todas las canciones inicialmente
+      loadAndRenderGrid(initialEndpoint, songsContainerId, songTemplate, errorMessage);
+
+      // Configurar la búsqueda
+      setupSearch('searchInput', 'searchButton', songsContainerId, searchEndpoint, initialEndpoint, songTemplate, errorMessage);
+    });
+  </script>
+</body>
+
+</html>

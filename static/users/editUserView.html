@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Editar Usuario</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="/js/utilities.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Editar Usuario</h1>
+        <form id="editUserForm" class="form-grid">
+            <div class="form-group">
+                <label for="name">Nombre de Usuario:</label>
+                <input type="text" id="name" name="name" required>
+            </div>
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            <button type="submit" class="btn edit-btn">Actualizar Usuario</button>
+            <button type="button" id="deleteButton" class="btn btn-delete">Eliminar Usuario</button>
+        </form>
+    </div>
+
+    <script>
+        async function deleteUser(userId) {
+            if (confirm('¿Estás seguro de que quieres eliminar este usuario? Esta acción no se puede deshacer.')) {
+                try {
+                    await fetchData(`/users/${userId}`, { method: 'DELETE' });
+                    alert('Usuario eliminado con éxito.');
+                    window.location.href = '/'; // Redirigir a la página principal
+                } catch (error) {
+                    alert('Error al eliminar el usuario: ' + error.message);
+                }
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const userId = getIdFromUrl(-2); // De /users/{id}/edit
+            if (!userId) {
+                alert("Error: No se pudo identificar el usuario a editar.");
+                return;
+            }
+
+            try {
+                const user = await fetchData(`/get/users/${userId}`);
+                document.getElementById('name').value = user.name;
+                document.getElementById('email').value = user.email;
+            } catch (error) {
+                alert('Error al cargar los datos del usuario: ' + error.message);
+            }
+
+            document.getElementById('editUserForm').addEventListener('submit', (event) => handleFormSubmit(
+                event,
+                userId,
+                '/users',
+                '¡Usuario actualizado con éxito!',
+                '/'
+            ));
+
+            document.getElementById('deleteButton').addEventListener('click', () => deleteUser(userId));
+        });
+    </script>
+</body>
+</html>

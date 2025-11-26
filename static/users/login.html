@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulario LogIn</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+
+<body>
+    <form action="/login" method="post">
+        <label for="user">Usuario</label>
+        <input type="text" name="user" id="user" required>
+        <hr>
+        <label for="password">Contraseña</label>
+        <input type="password" name="password" id="password" required>
+        <hr>
+        <input type="submit">
+    </form>
+    <button onclick="window.location.href='/signup'" class="btn btn-submit">
+        Registrarse
+    </button>
+
+</body>
+
+</html>

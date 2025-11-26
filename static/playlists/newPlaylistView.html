@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulario playlist</title>
+    
+</head>
+
+<body>
+    <h1 style="text-align: center;">Crear playlist</h1>
+    <form action="/playlists/new" method="post" class="form-grid">
+        <div class="form-group">
+            <label for="name"> Nombre </label>
+            <input type="text" name="name" id="name" required>
+        </div>
+        <hr>
+
+        <div class="form-group">
+            <label for="name"> Descripción </label>
+            <input type="text" name="description" id="description" required>
+        </div>
+        <hr>
+
+        <input type="submit" class="btn btn-submit" value="Enviar">
+    </form>
+</body>
+
+</html>

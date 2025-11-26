@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sidebar</title>
+    <link rel="stylesheet" href="../style.css">
+</head>
+
+<body>
+
+    <div id="mySidebar" class="sidebar">
+        <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+        <a href="/"><img src="/img/assets/home.png" alt="Home Icon" class="sidebar-icon">Home</a>
+        <a href="/albums"><img src="/img/assets/albums.png" alt="Albums Icon" class="sidebar-icon">Albumes</a>
+        <a href="/artists"><img src="/img/assets/artists.png" alt="Artists Icon" class="sidebar-icon">Artistas</a>
+        <hr>
+        <a>Tú cuenta > </a>
+        <a href="/playlists"><img src="/img/assets/playlists.png" alt="Playlists Icon"
+                class="sidebar-icon">Playlists</a>
+        <a href="/me/liked/songs"><img src="/img/assets/liked-songs.png" alt="Liked Songs Icon"
+                class="sidebar-icon">Favoritos</a>
+        <hr>
+        <a>Tú Studio > </a>
+        <a href="/artists/new"><img src="/img/assets/studio.png" alt="Studio Icon" class="sidebar-icon">Studio</a>
+        <hr>
+        <a href="/login">Cambiar de cuenta</a>
+
+    </div>
+
+    <div id="main">
+        <button class="openbtn" onclick="openNav()">&#9776;</button>
+    </div>
+
+    <script>
+        function openNav() {
+            document.getElementById("mySidebar").style.width = "250px";
+            document.getElementById("main").style.marginLeft = "250px";
+        }
+
+        function closeNav() {
+            document.getElementById("mySidebar").style.width = "0";
+            document.getElementById("main").style.marginLeft = "0";
+        }
+    </script>
+
+</body>
+
+</html>
