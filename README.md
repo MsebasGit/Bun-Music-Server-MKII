@@ -1,13 +1,13 @@
 # dbiiproy
 
 ## Proyecto:
-(Base) Sistema de streaming músical, escrito en Bun (con TypeScript) y SQLite con las siguientes caracteristicas:
+### (Base) Sistema de streaming músical, escrito en Bun (con TypeScript) y SQLite con las siguientes caracteristicas:
    - Incluye login
    - Permite tener usuarios con rol de invitados y artistas
    - Incluye procesos CRUD para canciones, álbumes y playlists (usuario con rol de artista)
    - Permite interactuar mediante "Me gusta" y comentarios (todos los usuarios)
    - Permite escuchar las canciones
-(Añadido) Mejora y correcciones del primer sistema musical con ayuda de un framework frontend
+### (Añadido) Mejora y correcciones del primer sistema musical con ayuda de un framework frontend
    - Correciones en el backend
    - Uso la librería Halogen/PureScript para mejorar y corregir el frontend
      - Simplificar lógica
