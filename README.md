@@ -14,7 +14,7 @@
      - Creación de componentes
 
 ## Objetivo
-Mejorar el primer sistema con mejores prácticas en el Backend, añadiendo más funcionalidades y utilizando Halogen para reconstruir totalmente el frontend
+Mejorar el primer sistema con mejores prácticas en el Backend, añadiendo más funcionalidades y utilizando Halogen para reconstruir totalmente el Frontend
 
 ## Lista de tareas:
 (Trello) https://trello.com/invite/b/69275f5b5cb172437e8db648/ATTIdef8b8c47c6a7bf2c84b6fd57262e06e61E700F8/bun-music-server-mkii
