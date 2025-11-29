@@ -14,92 +14,112 @@ const NEW_ALBUM_VIEW_PATH = './static/albums/newAlbumView.html';
 const ALBUMS_MENU_VIEW_PATH = './static/albums/albumsMenuView.html';
 const ME_ALBUMS_ARTISTS_VIEW_PATH = './static/albums/meAlbumsView.html';
 const EDIT_ALBUM_VIEW_PATH = './static/albums/editAlbumView.html';
-const ALBUMS_ARTISTS_VIEW_PATH = './static/albums/albumsArtistView.html'
+const ALBUMS_ARTISTS_VIEW_PATH = './static/albums/albumsArtistView.html';
 
 export const albumRoutes = [
-  // API para obtener todas los albumes
+
+  //          API REST
+
+  // Obtener todos los álbumes
   {
-    path: '/get/albums',
+    path: '/albums',
     method: 'GET',
     handler: handleGetAllAlbums,
     protected: true
   },
-  // API para buscar albumes
+
+  // Buscar álbumes
   {
-    path: '/get/albums/search',
+    path: '/albums/search',
     method: 'GET',
     handler: handleSearchAlbums,
     protected: true
   },
-  // Ruta del formulario del album
+
+  // Obtener un álbum por ID
   {
-    path: '/albums/new',
-    method: 'GET',
-    handler: () => serveHtmlWithSidebar(NEW_ALBUM_VIEW_PATH),
-    protected: true
-  },
-  // Api para añadir un album (POST)
-  {
-    path: '/albums/new',
-    method: 'POST',
-    handler: handleInsertAlbum,
-    protected: true
-  },
-  // Ruta para ver todas los albumes
-  {
-    path: '/albums',
-    method: 'GET',
-    handler: () => serveHtmlWithSidebar(ALBUMS_MENU_VIEW_PATH),
-    protected: true
-  },
-  // Vista de los albumes que tiene un artista por ID
-  {
-    path: '/artists/:id/albums',
-    method: 'GET',
-    handler: () => serveHtmlWithSidebar(ALBUMS_ARTISTS_VIEW_PATH),
-    protected: true
-  },
-  {
-    path: '/get/albums/:id',
+    path: '/albums/:id',
     method: 'GET',
     handler: handleGetAlbumById,
     protected: true
   },
+
+  // Obtener álbumes de un artista
   {
-    path: '/get/artists/:id/albums',
+    path: '/artists/:id/albums',
     method: 'GET',
-    handler: handleGetAlbumsByArtistId, // This should be handleGetAlbumsByArtistId
+    handler: handleGetAlbumsByArtistId,
     protected: true
   },
+
+  // Crear álbum
   {
-    path: '/albums/:id/edit',
-    method: 'GET',
-    handler: () => serveHtmlWithSidebar(EDIT_ALBUM_VIEW_PATH),
+    path: '/albums',
+    method: 'POST',
+    handler: handleInsertAlbum,
     protected: true
   },
+
+  // Actualizar álbum
   {
     path: '/albums/:id',
     method: 'PUT',
     handler: handleUpdateAlbum,
     protected: true
   },
+
+  // Eliminar álbum
   {
     path: '/albums/:id',
     method: 'DELETE',
     handler: handleDeleteAlbum,
     protected: true
   },
+
+  // Obtener canciones de un álbum
   {
-    path: '/get/albums/:id/songs',
+    path: '/albums/:id/songs',
     method: 'GET',
     handler: handleGetAllAlbumSongs,
     protected: true
   },
-  // Vista de albumes de artista (para administración)
+
+  //          VISTAS HTML
+  
+  {
+    path: '/albums/new',
+    method: 'GET',
+    handler: () => serveHtmlWithSidebar(NEW_ALBUM_VIEW_PATH),
+    protected: true
+  },
+
+  {
+    path: '/albums',
+    method: 'GET',
+    handler: () => serveHtmlWithSidebar(ALBUMS_MENU_VIEW_PATH),
+    protected: true
+  },
+
+  {
+    path: '/artists/:id/albums/view',
+    method: 'GET',
+    handler: () => serveHtmlWithSidebar(ALBUMS_ARTISTS_VIEW_PATH),
+    protected: true
+  },
+
+  {
+    path: '/albums/:id/edit',
+    method: 'GET',
+    handler: () => serveHtmlWithSidebar(EDIT_ALBUM_VIEW_PATH),
+    protected: true
+  },
+
   {
     path: '/me/albums',
     method: 'GET',
     handler: () => serveHtmlWithSidebar(ME_ALBUMS_ARTISTS_VIEW_PATH),
     protected: true
-  },
+  }
+
 ];
+
