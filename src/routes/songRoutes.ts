@@ -7,8 +7,8 @@ import {
   handleDeleteSong,
   handleSearchSongs
 } from './../controller/songController';
-import { handleGetAllAlbumSongs } from '../controller/albumController';
-import { isArtist, isSongOwner } from '../utilities/authUtils';
+import { handleGetAllAlbumSongs } from '../controller/albumController'
+import { isArtist, isSongOwner, withAuthCheck } from '../utilities/authUtils';
 
 // Vistas
 const NEW_SONG_VIEW_PATH = './static/songs/newSongView.html';
@@ -16,13 +16,18 @@ const SONG_DETAIL_VIEW_PATH = './static/songs/showSongByID.html';
 const EDIT_SONG_VIEW_PATH = './static/songs/editSongView.html';
 const ALBUM_SONGS_VIEW_PATH = './static/albums/albumSongsView.html';
 
+const handleUpdateSongAdapter = (req: Request, authResult: any, id: number) => handleUpdateSong(req, id);
+const handleDeleteSongAdapter = (req: Request, authResult: any, id: number) => handleDeleteSong(req, id);
+const editSongViewAdapter = (req: Request, authResult: any, id: number) => serveHtmlWithSidebar(EDIT_SONG_VIEW_PATH);
+
+
 export const songRoutes = [
 
   //            API REST
 
   // Obtener todas las canciones
   {
-    path: '/songs',
+    path: '/api/v1/songs',
     method: 'GET',
     handler: handleGetAllSongs,
     protected: true
@@ -30,7 +35,7 @@ export const songRoutes = [
 
   // Buscar canciones
   {
-    path: '/songs/search',
+    path: '/api/v1/songs/search',
     method: 'GET',
     handler: handleSearchSongs,
     protected: true
@@ -38,7 +43,7 @@ export const songRoutes = [
 
   // Obtener canciones de un álbum
   {
-    path: '/albums/:albumId/songs',
+    path: '/api/v1/albums/:id/songs',
     method: 'GET',
     handler: handleGetAllAlbumSongs,
     protected: true
@@ -66,13 +71,9 @@ export const songRoutes = [
 
   // Actualizar canción
   {
-    path: '/songs/:id',
-    method: 'PUT',
-    handler: async (req: Request, id: number) => {
-      const authError = await isSongOwner(req, id);
-      if (authError) return authError;
-      return handleUpdateSong(req, id);
-    },
+    path: '/api/v1/songs',
+    method: 'POST',
+    handler: withAuthCheck(isArtist, true)(handleInsertSong),
     protected: true
   },
 
@@ -92,7 +93,7 @@ export const songRoutes = [
 
   // Formulario para nueva canción
   {
-    path: '/songs/new',
+    path: '/api/v1/songs/:id',
     method: 'GET',
     handler: () => serveHtmlWithSidebar(NEW_SONG_VIEW_PATH),
     protected: true
@@ -102,27 +103,23 @@ export const songRoutes = [
   {
     path: '/songs/:id/view',
     method: 'GET',
-    handler: () => serveHtmlWithSidebar(SONG_DETAIL_VIEW_PATH),
+    handler: withAuthCheck(isSongOwner)(editSongViewAdapter),
     protected: true
   },
 
   // Formulario para editar canción
   {
-    path: '/songs/:id/edit',
-    method: 'GET',
-    handler: async (req: Request, id: number) => {
-      const authError = await isSongOwner(req, id);
-      if (authError) return authError;
-      return serveHtmlWithSidebar(EDIT_SONG_VIEW_PATH);
-    },
+    path: '/api/v1/songs/:id',
+    method: 'PUT',
+    handler: withAuthCheck(isSongOwner)(handleUpdateSongAdapter),
     protected: true
   },
 
   // Vista de canciones de un álbum
   {
-    path: '/albums/:albumId/songs/view',
-    method: 'GET',
-    handler: () => serveHtmlWithSidebar(ALBUM_SONGS_VIEW_PATH),
+    path: '/api/v1/songs/:id',
+    method: 'DELETE',
+    handler: withAuthCheck(isSongOwner)(handleDeleteSongAdapter),
     protected: true
   }
 

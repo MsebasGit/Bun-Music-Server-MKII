@@ -1,0 +1,8 @@
+@import "tailwindcss";
+
+/* Opcional: Si quieres forzar una fuente específica en toda la app.
+   Pero por defecto Tailwind ya usa sans-serif.
+*/
+:root {
+  font-family: system-ui, -apple-system, sans-serif;
+}

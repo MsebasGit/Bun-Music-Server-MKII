@@ -18,7 +18,7 @@ export const artistRoutes = [
   
   // Obtener todos los artistas
   {
-    path: '/artists',
+    path: '/api/v1/artists',
     method: 'GET',
     handler: handleGetAllArtists,
     protected: true
@@ -26,7 +26,7 @@ export const artistRoutes = [
 
   // Buscar artistas
   {
-    path: '/artists/search',
+    path: '/api/v1/artists/search',
     method: 'GET',
     handler: handleSearchArtists,
     protected: true
@@ -50,15 +50,25 @@ export const artistRoutes = [
 
   // Crear artista
   {
-    path: '/artists',
+    path: '/api/v1/artists',
     method: 'POST',
     handler: handleInsertArtist,
     protected: true
   },
-
-  // Actualizar artista
   {
-    path: '/artists/:id',
+    path: '/api/v1/artists/user/:id',
+    method: 'GET',
+    handler: handleGetArtistByUserId,
+    protected: true
+  },
+  {
+    path: '/api/v1/artists/:id',
+    method: 'GET',
+    handler: handleGetArtistById,
+    protected: true
+  },
+  {
+    path: '/api/v1/artists/:id',
     method: 'PUT',
     handler: handleUpdateArtist,
     protected: true
@@ -66,7 +76,7 @@ export const artistRoutes = [
 
   // Eliminar artista
   {
-    path: '/artists/:id',
+    path: '/api/v1/artists/:id',
     method: 'DELETE',
     handler: handleDeleteArtist,
     protected: true

@@ -1,4 +1,3 @@
-import { serveHtmlWithSidebar } from '../utilities/view';
 import {
   handleGetAllPlaylists,
   handleGetPlaylistById,
@@ -7,81 +6,52 @@ import {
   handleDeletePlaylist
 } from './../controller/playlistController';
 
-// Rutas de vistas HTML
-const NEW_PLAYLIST_VIEW_PATH = './static/playlists/newPlaylistView.html';
-const EDIT_PLAYLIST_VIEW_PATH = './static/playlists/editPlaylistView.html';
-const PLAYLISTS_MENU_VIEW_PATH = './static/playlists/playlistsMenuView.html';
+// NOTA: Ya no importamos 'serveHtmlWithSidebar' ni las rutas de los HTML files.
+// Svelte se encarga de eso ahora.
 
 export const playlistRoutes = [
-
-  /* ------------------------ API JSON ------------------------ */
-
-  // Obtener todas las playlists (JSON)
+  // 1. GET Todas (JSON) - MANTENER
   {
-    path: '/get/playlists',
+    path: '/api/v1/playlists',
     method: 'GET',
     handler: handleGetAllPlaylists,
     protected: true
   },
-
-  // Obtener una playlist por ID (JSON)
+  
+  // 2. CREAR (JSON) - MANTENER
   {
-    path: '/get/playlists/:id',
-    method: 'GET',
-    handler: handleGetPlaylistById,
-    protected: true
-  },
-
-  /* ------------------------ Vistas HTML ------------------------ */
-
-  // Vista: formulario nueva playlist
-  {
-    path: '/playlists/new',
-    method: 'GET',
-    handler: () => serveHtmlWithSidebar(NEW_PLAYLIST_VIEW_PATH),
-    protected: true
-  },
-
-  // Vista: ver todas las playlists
-  {
-    path: '/playlists',
-    method: 'GET',
-    handler: () => serveHtmlWithSidebar(PLAYLISTS_MENU_VIEW_PATH),
-    protected: true
-  },
-
-  // Vista: editar playlist por ID
-  {
-    path: '/playlists/:id/edit',
-    method: 'GET',
-    handler: () => serveHtmlWithSidebar(EDIT_PLAYLIST_VIEW_PATH),
-    protected: true
-  },
-
-  /* ------------------------ Acciones CRUD ------------------------ */
-
-  // Crear playlist
-  {
-    path: '/playlists/new',
+    path: '/api/v1/playlists',
     method: 'POST',
     handler: handleInsertPlaylist,
     protected: true
   },
 
-  // Editar playlist
+  // 3. GET Una por ID (JSON) - MANTENER
   {
-    path: '/playlists/:id',
+    path: '/api/v1/playlists/:id',
+    method: 'GET',
+    handler: () => serveHtmlWithSidebar(EDIT_PLAYLIST_VIEW_PATH),
+    protected: true
+  },
+
+  // 4. EDITAR (JSON) - MANTENER
+  {
+    path: '/api/v1/playlists/:id',
     method: 'PUT',
     handler: handleUpdatePlaylist,
     protected: true
   },
 
-  // Eliminar playlist
+  // 5. BORRAR (JSON) - MANTENER
   {
-    path: '/playlists/:id',
+    path: '/api/v1/playlists/:id',
     method: 'DELETE',
     handler: handleDeletePlaylist,
     protected: true
   }
 
 ];
+
+// RESUMEN:
+// Borramos: /playlists/new, /playlists, /playlists/:id/edit
+// Porque esas rutas ahora son "Paginas virtuales" en el frontend.

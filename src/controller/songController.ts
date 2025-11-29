@@ -1,6 +1,5 @@
 import * as songModel from '../model/songModel';
 import * as songArtistModel from '../model/songArtistModel';
-import { isArtist } from '../utilities/authUtils';
 import { toCorrectDate } from '../utilities/correctDate';
 import {
     handleGetAll,
@@ -9,7 +8,8 @@ import {
     handleUpdate,
     handleDeleteById,
     getAudioDuration,
-    generateSafeFilename
+    generateSafeFilename,
+    handleFileUpload
 } from '../utilities/controllerUtils';
 
 export {
@@ -59,28 +59,11 @@ async function processSongForm(req: Request): Promise<[string, string, number, s
         throw new Error('Faltan campos obligatorios o son inválidos (título, lenguaje, género, archivo de canción, portada)');
     }
 
-    // Handle file upload for song
-    const songFileExtension = songFile.name.split('.').pop();
-    if (!songFileExtension || !['mp3', 'wav'].includes(songFileExtension.toLowerCase())) {
-        throw new Error('El archivo de canción debe ser MP3 o WAV.');
-    }
-    const songFilename = generateSafeFilename(songFile.name);
-    const song_path = `/music/${songFilename}`;
-    const songUploadPath = `static${song_path}`;
-    await Bun.write(songUploadPath, await songFile.arrayBuffer());
+    const song_path = await handleFileUpload(songFile, ['mp3', 'wav'], '/music');
+    const cover_path = await handleFileUpload(coverFile, ['jpg', 'png', 'jpeg'], '/img/covers');
 
     // Get duration using ffprobe
-    duration = await getAudioDuration(songUploadPath); // Populate duration automatically
-
-    // Handle file upload for cover
-    const coverFileExtension = coverFile.name.split('.').pop();
-    if (!coverFileExtension || !['jpg', 'png', 'jpeg'].includes(coverFileExtension.toLowerCase())) {
-        throw new Error('El archivo de portada debe ser JPG o PNG.');
-    }
-    const coverFilename = generateSafeFilename(coverFile.name);
-    const cover_path = `/img/covers/${coverFilename}`;
-    const coverUploadPath = `static${cover_path}`;
-    await Bun.write(coverUploadPath, await coverFile.arrayBuffer());
+    duration = await getAudioDuration(`static${song_path}`); // Populate duration automatically
 
 
     let id_album: number | null = null;
@@ -119,15 +102,8 @@ async function processSongFormForUpdate(req: Request): Promise<[string, string, 
 
     let song_path: string;
     if (songFile && songFile.size > 0) { // New song file uploaded
-        const songFileExtension = songFile.name.split('.').pop();
-        if (!songFileExtension || !['mp3', 'wav'].includes(songFileExtension.toLowerCase())) {
-            throw new Error('El archivo de canción debe ser MP3 o WAV.');
-        }
-        const songFilename = generateSafeFilename(songFile.name);
-        song_path = `/music/${songFilename}`;
-        const songUploadPath = `static${song_path}`;
-        await Bun.write(songUploadPath, await songFile.arrayBuffer());
-        duration = await getAudioDuration(songUploadPath); // Populate duration automatically
+        song_path = await handleFileUpload(songFile, ['mp3', 'wav'], '/music');
+        duration = await getAudioDuration(`static${song_path}`); // Populate duration automatically
     } else if (existing_song_path) { // No new song file, use existing path
         song_path = existing_song_path;
         // If no new song file, and duration was not provided, try to get it from the existing file
@@ -140,14 +116,7 @@ async function processSongFormForUpdate(req: Request): Promise<[string, string, 
 
     let cover_path: string;
     if (coverFile && coverFile.size > 0) { // New cover file uploaded
-        const fileExtension = coverFile.name.split('.').pop();
-        if (!fileExtension || !['jpg', 'png', 'jpeg'].includes(fileExtension.toLowerCase())) {
-            throw new Error('El archivo de portada debe ser JPG o PNG.');
-        }
-        const filename = generateSafeFilename(coverFile.name);
-        cover_path = `/img/covers/${filename}`;
-        const uploadPath = `static${cover_path}`;
-        await Bun.write(uploadPath, await coverFile.arrayBuffer());
+        cover_path = await handleFileUpload(coverFile, ['jpg', 'png', 'jpeg'], '/img/covers');
     } else if (existing_cover_path) { // No new cover file, use existing path
         cover_path = existing_cover_path;
     } else {
@@ -174,13 +143,8 @@ async function handleGetSongById(req: Request, id: number): Promise<Response> {
 }
 
 // POST /songs/new
-async function handleInsertSong(req: Request): Promise<Response> {
+async function handleInsertSong(req: Request, artistResult: { id_artist: number }): Promise<Response> {
     try {
-        // 1. Validar que el usuario es un artista y obtener su ID
-        const artistResult = await isArtist(req);
-        if (artistResult instanceof Response) {
-            return artistResult; // No es un artista o no está autorizado
-        }
         const id_artist = artistResult.id_artist;
 
         // 2. Procesar el formulario y insertar la canción
@@ -190,13 +154,8 @@ async function handleInsertSong(req: Request): Promise<Response> {
         // 3. Asociar la canción con el artista
         await songArtistModel.insertSongArtist(id_artist, id_song);
 
-        // 4. Redirigir
-        return new Response(null, {
-            status: 302, // Found
-            headers: {
-                'Location': '/me/songs'
-            }
-        });
+        // 4. Devolver una respuesta de éxito
+        return Response.json({ message: "Canción creada correctamente", id_song: id_song }, { status: 201 });
 
     } catch (error: any) {
         console.error("Error al insertar canción:", error);

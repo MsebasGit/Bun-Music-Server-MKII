@@ -12,7 +12,7 @@ export const commentRoutes = [
 
     // Obtener comentarios de una canción
     {
-        path: '/songs/:id/comments',
+        path: '/api/v1/songs/:id/comments',
         method: 'GET',
         handler: handleGetCommentsBySongId,
         protected: true
@@ -20,7 +20,7 @@ export const commentRoutes = [
 
     // Obtener comentario por ID
     {
-        path: '/comments/:id',
+        path: '/api/v1/comments/:id',
         method: 'GET',
         handler: handleGetCommentById,
         protected: true
@@ -28,7 +28,7 @@ export const commentRoutes = [
 
     // Crear comentario para una canción
     {
-        path: '/songs/:id/comments',
+        path: '/api/v1/songs/:id/comments',
         method: 'POST',
         handler: handleInsertComment,
         protected: true
@@ -36,7 +36,7 @@ export const commentRoutes = [
 
     // Actualizar comentario
     {
-        path: '/comments/:id',
+        path: '/api/v1/comments/:id',
         method: 'PUT',
         handler: handleUpdateComment,
         protected: true
@@ -44,7 +44,7 @@ export const commentRoutes = [
 
     // Eliminar comentario
     {
-        path: '/comments/:id',
+        path: '/api/v1/comments/:id',
         method: 'DELETE',
         handler: handleDeleteComment,
         protected: true

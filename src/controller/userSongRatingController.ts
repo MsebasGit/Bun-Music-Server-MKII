@@ -46,7 +46,6 @@ async function handleLikeSong(req: Request, id_song: number): Promise<Response> 
         req,
         processor,
         userSongRatingsModel.insertLike,
-        `/songs/${id_song}`,
         'like'
     );
 }

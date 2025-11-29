@@ -1,18 +1,24 @@
 {
-  "name": "dbiiproy",
+  "name": "Bun Music Server",
   "module": "index.ts",
   "type": "module",
   "private": true,
   "devDependencies": {
     "@types/bun": "latest",
-    "@types/figlet": "^1.7.0"
+    "@types/figlet": "^1.7.0",
+    "daisyui": "^5.5.5"
   },
   "peerDependencies": {
     "typescript": "^5"
   },
   "dependencies": {
     "@elysiajs/jwt": "^1.4.0",
-    "elysia": "^1.4.13",
-    "figlet": "^1.9.3"
+    "@tanstack/svelte-query": "^6.0.9",
+    "axios": "^1.13.2",
+    "figlet": "^1.9.3",
+    "svelte-routing": "^2.13.0"
+  },
+  "scripts": {
+    "start": "concurrently \"bun run index.ts\" \"cd frontend && bun run build\""
   }
 }

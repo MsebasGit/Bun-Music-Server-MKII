@@ -102,10 +102,10 @@ async function isSongLikedByUser(id_user: number, id_song: number): Promise<IsLi
     return { is_liked: result?.is_liked ?? false };
 }
 
-async function countLikesInSong(id_song: number): Promise<{ cuantityOfLikes: number }> {
+async function countLikesInSong(id_song: number): Promise<{ cuantity_of_likes: number }> {
     const query = () => db.query(
         `SELECT COUNT(*) as cuantity_of_likes FROM user_song_ratings WHERE id_song = ? AND is_liked = TRUE`
-    ).get(id_song) as { cuantityOfLikes: number };
+    ).get(id_song) as { cuantity_of_likes: number };
     const result = await executeDbQuery(query, 'Error al contar los likes de la canción');
-    return result ?? { cuantityOfLikes: 0 };
+    return result ?? { cuantity_of_likes: 0 };
 }

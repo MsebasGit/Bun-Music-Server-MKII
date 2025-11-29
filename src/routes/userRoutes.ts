@@ -14,46 +14,16 @@ const EDIT_USER_VIEW_PATH = './static/users/editUserView.html';
 const ME_MENU_VIEW_PATH = './static/meMenu.html';
 
 export const userRoutes = [
-
-  //            VISTAS HTML
-
-  // Página de registro
+  // Petición POST para manejar el registro
   {
-    path: '/signup',
-    method: 'GET',
-    handler: () => serveHtmlWithSidebar(SIGNUP_VIEW_PATH),
+    path: '/api/v1/signup',
+    method: 'POST',
+    handler: handleSignUp,
     protected: false
   },
-
-  // Página de login
+  // Petición POST para manejar el login
   {
-    path: '/login',
-    method: 'GET',
-    handler: () => serveHtmlWithSidebar(LOGIN_VIEW_PATH),
-    protected: false
-  },
-
-  // Formulario para editar usuario
-  {
-    path: '/users/:id/edit',
-    method: 'GET',
-    handler: () => serveHtmlWithSidebar(EDIT_USER_VIEW_PATH),
-    protected: true
-  },
-
-  // Vista de perfil propio
-  {
-    path: '/me',
-    method: 'GET',
-    handler: () => serveHtmlWithSidebar(ME_MENU_VIEW_PATH),
-    protected: true
-  },
-
-  //            API REST
-
-  // Registro de usuario
-  {
-    path: '/signup',
+    path: '/api/v1/login',
     method: 'POST',
     handler: handleSignUp,
     protected: false
@@ -61,15 +31,15 @@ export const userRoutes = [
 
   // Login
   {
-    path: '/login',
-    method: 'POST',
-    handler: handleLogin,
+    path: '/api/v1/me/id',
+    method: 'GET',
+    handler: getUserId,
     protected: false
   },
 
   // Obtener datos de usuario propio
   {
-    path: '/me',
+    path: '/api/v1/users/:id',
     method: 'GET',
     handler: handleGetUserById,
     protected: true
@@ -77,15 +47,15 @@ export const userRoutes = [
 
   // Obtener datos de un usuario por ID
   {
-    path: '/users/:id',
-    method: 'GET',
-    handler: handleGetUserById,
+    path: '/api/v1/users/:id',
+    method: 'DELETE',
+    handler: handleDeleteUser,
     protected: true
   },
 
   // Actualizar usuario por ID
   {
-    path: '/users/:id',
+    path: '/api/v1/users/:id',
     method: 'PUT',
     handler: handleUpdateUser,
     protected: true

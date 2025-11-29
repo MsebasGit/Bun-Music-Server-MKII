@@ -14,7 +14,8 @@ import { userSongRatingRoutes } from './src/routes/userSongRatingRoutes';
 import { commentRoutes } from './src/routes/commentRoutes';
 import { serveHtmlWithSidebar } from './src/utilities/view';
 
-const INDEX_PATH = './static/index.html';
+const FRONTEND_DIST_PATH = './frontend/dist';
+const ROOT_STATIC_PATH = './static';
 
 // Helper to convert a route path with params (e.g., /songs/:id) to a regex
 function pathToRegex(path: string) {
@@ -27,14 +28,7 @@ function pathToRegex(path: string) {
 }
 
 const allRoutes = [
-    // Ruta de la página de inicio
-    {
-        path: '/',
-        method: 'GET',
-        handler: () => serveHtmlWithSidebar(INDEX_PATH),
-        protected: true // La página principal requiere login
-    },
-    // Tus rutas importadas
+    // Tus rutas importadas (API routes)
     ...userRoutes,
     ...artistRoutes,
     ...albumRoutes,
@@ -75,8 +69,8 @@ function authMiddleware(req: Request): Response | null {
 
 // --- CONFIGURACIÓN DE CORS ---
 const corsHeaders = {
-    'Access-Control-Allow-Origin': '*', // Permite cualquier origen (para desarrollo). 
-                                       // En producción, especifica el dominio de tu frontend.
+    'Access-Control-Allow-Origin': '*', // Permite cualquier origen (para desarrollo).
+    // En producción, especifica el dominio de tu frontend.
     'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
 };
@@ -106,19 +100,18 @@ async function handleCors(req: Request, handler: (req: Request) => Promise<Respo
 const server = Bun.serve({
     port: 3000,
     async fetch(req: Request) {
-        // Envolver toda la lógica del servidor en el handler de CORS
         return handleCors(req, async (actualReq) => {
             const url = new URL(actualReq.url);
             const path = url.pathname;
             const method = actualReq.method;
 
+            // 1. Intentar servir API routes
             for (const route of allRoutes) {
                 const match = route.regex.exec(path);
                 if (match && route.method === method) {
                     const params: { [key: string]: string | number } = {};
                     route.paramNames.forEach((name, index) => {
                         const value = match[index + 1];
-                        // Try to convert to number if it looks like one
                         params[name] = isNaN(Number(value)) ? value : Number(value);
                     });
 
@@ -128,24 +121,49 @@ const server = Bun.serve({
                             return authResponse;
                         }
                     }
-                    // Pass params as additional arguments to the handler
                     return route.handler(actualReq, ...Object.values(params));
                 }
             }
 
-            const filePath = `./static${path}`;
-            const file = Bun.file(filePath);
-
-            if (await file.exists()) {
-                if (filePath.endsWith('.html')) {
-                    if (filePath.endsWith('login.html') || filePath.endsWith('signup.html')) {
-                        return new Response(file);
-                    }
-                    return serveHtmlWithSidebar(filePath);
+            // 2. Servir archivos estáticos del frontend (Svelte build)
+            // Para la ruta raíz, siempre servir el index.html del Svelte build
+            if (path === '/' && method === 'GET') {
+                const indexFile = Bun.file(`${FRONTEND_DIST_PATH}/index.html`);
+                if (await indexFile.exists()) {
+                    return new Response(indexFile, { headers: { 'Content-Type': 'text/html' } });
                 }
-                return new Response(file);
             }
 
+            // Intentar servir cualquier otro archivo desde el directorio de construcción de Svelte
+            const frontendDistFilePath = `${FRONTEND_DIST_PATH}${path}`;
+            const frontendDistFile = Bun.file(frontendDistFilePath);
+            if (await frontendDistFile.exists()) {
+                return new Response(frontendDistFile);
+            }
+
+            // 3. Servir archivos estáticos del directorio raíz 'static/'
+            const rootStaticFilePath = `${ROOT_STATIC_PATH}${path}`;
+            const rootStaticFile = Bun.file(rootStaticFilePath);
+            if (await rootStaticFile.exists()) {
+                if (rootStaticFilePath.endsWith('.html')) {
+                    if (rootStaticFilePath.endsWith('login.html') || rootStaticFilePath.endsWith('signup.html')) {
+                        return new Response(rootStaticFile);
+                    }
+                    return serveHtmlWithSidebar(rootStaticFilePath);
+                }
+                return new Response(rootStaticFile);
+            }
+
+            // 4. SPA Fallback: Para cualquier ruta no encontrada que no sea una API,
+            // servir el index.html del Svelte build. Esto permite el enrutamiento del lado del cliente.
+            // Asumimos que todas las APIs tienen un prefijo distinto o son manejadas por `allRoutes`
+            // antes de llegar aquí.
+            const indexFile = Bun.file(`${FRONTEND_DIST_PATH}/index.html`);
+            if (await indexFile.exists()) {
+                return new Response(indexFile, { headers: { 'Content-Type': 'text/html' } });
+            }
+
+            // Si no se encuentra nada
             return new Response('Not Found', { status: 404 });
         });
     },

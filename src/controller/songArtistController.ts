@@ -47,7 +47,7 @@ async function handleGetArtistsWhereSongNotExist(req: Request, id_song: number):
 
 // POST /songs/artists/new
 async function handleInsertSongArtist(req: Request): Promise<Response> {
-    return handleInsert(req, processSongArtistForm, songArtistModel.insertSongArtist, "/", 'relación canción-artista');
+    return handleInsert(req, processSongArtistForm, songArtistModel.insertSongArtist, 'relación canción-artista');
 }
 
 // DELETE /artists/:id_artist/songs/:id_song

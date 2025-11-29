@@ -1,8 +1,7 @@
 import * as userModel from '../model/userModel';
 import * as artistModel from '../model/artistModel';
 import { Elysia } from 'elysia';
-import { getUserCookie } from '../utilities/getCookie';
-import { isArtist } from '../utilities/authUtils';
+import { getUserDataFromCookie } from '../utilities/getCookie';
 import { encrypt } from '../utilities/cryptoUtils';
 import { 
     handleGetAll, 
@@ -35,12 +34,6 @@ async function handleSignUp(req: Request): Promise<Response> {
 
         await userModel.insertUser(user, hashedPassword, email);
 
-        return new Response(null, {
-            status: 302, // O 301 para redirección permanente
-            headers: {
-                Location: "/login",
-            },
-        });
         return new Response(JSON.stringify({ message: 'Usuario creado con éxito' }), { status: 201 });
 
     } catch (error) {
@@ -51,9 +44,9 @@ async function handleSignUp(req: Request): Promise<Response> {
 
 async function handleLogin(req: Request): Promise<Response> {
     try {
-        const body = await req.formData();
-        const name = body.get("user") as string;
-        const pass = body.get("password") as string;
+        const body = await req.json(); // Changed from formData() to json()
+        const name = body.user as string; // Access 'user' property from JSON
+        const pass = body.password as string; // Access 'password' property from JSON
 
         // (Respuesta de error, está bien)
         if (!name || !pass) {
@@ -75,19 +68,26 @@ async function handleLogin(req: Request): Promise<Response> {
             return new Response(JSON.stringify({ message: 'Credenciales incorrectas' }), { status: 401 });
         }
 
-         // Encrypt the user ID for the cookie
-         const encryptedUserId = await encrypt(user.id_user.toString());
-         const userCookie = `id_user=${encryptedUserId}; Path=/; HttpOnly`;
+        const artist = await artistModel.getArtistByUserId(user.id_user);
+        const id_artist = artist ? artist.id_artist : null;
+
+        // Now, create a payload to encrypt
+        const cookiePayload = {
+            id_user: user.id_user,
+            id_artist: id_artist
+        };
+
+        const encryptedPayload = await encrypt(JSON.stringify(cookiePayload));
+        const userCookie = `user_data=${encryptedPayload}; Path=/; HttpOnly`;
 
          // Prepara los headers para la respuesta
          const headers = new Headers();
-         headers.set('Location', "/"); // A dónde redirigir
-         headers.append('Set-Cookie', userCookie); // Añade la PRIMERA cookie
+         headers.append('Set-Cookie', userCookie);
 
          // Envía la redirección (302) CON todas las cookies
-         return new Response(null, {
-             status: 302,
-             headers: headers, // Usa el objeto headers que preparamos
+         return new Response(JSON.stringify({ message: 'Inicio de sesión exitoso' }), {
+             status: 200,
+             headers: headers,
          });
 
      } catch (error) {
@@ -97,17 +97,11 @@ async function handleLogin(req: Request): Promise<Response> {
 }
 
 async function getUserId(req: Request): Promise<Response> {
-    const id_user = await getUserCookie(req);
-    let id_artist: number | null = null;
-
-    const artistResult = await isArtist(req);
-    if (!(artistResult instanceof Response)) {
-        id_artist = artistResult.id_artist;
-    }
+    const userData = await getUserDataFromCookie(req);
 
     return Response.json({ 
-        id_user: id_user ? id_user.toString() : null, 
-        id_artist: id_artist ? id_artist.toString() : null 
+        id_user: userData ? userData.id_user.toString() : null, 
+        id_artist: userData && userData.id_artist ? userData.id_artist.toString() : null 
     });
 }
 

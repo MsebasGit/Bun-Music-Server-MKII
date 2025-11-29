@@ -9,6 +9,7 @@ import {
   handleGetAlbumsByArtistId,
   handleSearchAlbums
 } from './../controller/albumController';
+import { withAuthCheck, isArtist } from '../utilities/authUtils';
 
 const NEW_ALBUM_VIEW_PATH = './static/albums/newAlbumView.html';
 const ALBUMS_MENU_VIEW_PATH = './static/albums/albumsMenuView.html';
@@ -22,7 +23,7 @@ export const albumRoutes = [
 
   // Obtener todos los álbumes
   {
-    path: '/albums',
+    path: '/api/v1/albums',
     method: 'GET',
     handler: handleGetAllAlbums,
     protected: true
@@ -30,7 +31,7 @@ export const albumRoutes = [
 
   // Buscar álbumes
   {
-    path: '/albums/search',
+    path: '/api/v1/albums/search',
     method: 'GET',
     handler: handleSearchAlbums,
     protected: true
@@ -46,9 +47,9 @@ export const albumRoutes = [
 
   // Obtener álbumes de un artista
   {
-    path: '/artists/:id/albums',
-    method: 'GET',
-    handler: handleGetAlbumsByArtistId,
+    path: '/api/v1/albums',
+    method: 'POST',
+    handler: withAuthCheck(isArtist, true)(handleInsertAlbum),
     protected: true
   },
 
@@ -70,15 +71,15 @@ export const albumRoutes = [
 
   // Eliminar álbum
   {
-    path: '/albums/:id',
-    method: 'DELETE',
-    handler: handleDeleteAlbum,
+    path: '/api/v1/albums/:id',
+    method: 'GET',
+    handler: handleGetAlbumById,
     protected: true
   },
 
   // Obtener canciones de un álbum
   {
-    path: '/albums/:id/songs',
+    path: '/api/v1/artists/:id/albums',
     method: 'GET',
     handler: handleGetAllAlbumSongs,
     protected: true
@@ -94,21 +95,21 @@ export const albumRoutes = [
   },
 
   {
-    path: '/albums',
-    method: 'GET',
-    handler: () => serveHtmlWithSidebar(ALBUMS_MENU_VIEW_PATH),
+    path: '/api/v1/albums/:id',
+    method: 'PUT',
+    handler: handleUpdateAlbum,
     protected: true
   },
 
   {
-    path: '/artists/:id/albums/view',
-    method: 'GET',
-    handler: () => serveHtmlWithSidebar(ALBUMS_ARTISTS_VIEW_PATH),
+    path: '/api/v1/albums/:id',
+    method: 'DELETE',
+    handler: handleDeleteAlbum,
     protected: true
   },
 
   {
-    path: '/albums/:id/edit',
+    path: '/api/v1/albums/:id/songs',
     method: 'GET',
     handler: () => serveHtmlWithSidebar(EDIT_ALBUM_VIEW_PATH),
     protected: true

@@ -17,7 +17,7 @@ export const userSongRatingRoutes = [
 
   // Vista de canciones que le gustan al usuario
   {
-    path: '/me/liked/songs',
+    path: '/api/v1/me/liked-songs',
     method: 'GET',
     handler: () => serveHtmlWithSidebar(LIKED_SONGS_VIEW_PATH),
     protected: true
@@ -27,7 +27,7 @@ export const userSongRatingRoutes = [
             
   // Obtener todas las canciones que le gustan al usuario
   {
-    path: '/me/liked/songs',
+    path: '/api/v1/me/liked-songs/search',
     method: 'GET',
     handler: handleGetLikedSongs,
     protected: true
@@ -35,7 +35,7 @@ export const userSongRatingRoutes = [
 
   // Buscar canciones que le gustan al usuario
   {
-    path: '/me/liked/songs/search',
+    path: '/api/v1/me/liked-songs/:id_song',
     method: 'GET',
     handler: handleSearchLikedSongs,
     protected: true
@@ -43,7 +43,7 @@ export const userSongRatingRoutes = [
 
   // Verificar si una canción específica tiene like del usuario
   {
-    path: '/me/liked/songs/:id',
+    path: '/api/v1/songs/:id_song/likes',
     method: 'GET',
     handler: handleIsSongLiked,
     protected: true
@@ -59,7 +59,7 @@ export const userSongRatingRoutes = [
 
   // Dar like a una canción
   {
-    path: '/me/liked/songs/:id',
+    path: '/api/v1/songs/:id/like',                                                                                                                                                         
     method: 'POST',
     handler: handleLikeSong,
     protected: true
@@ -67,8 +67,8 @@ export const userSongRatingRoutes = [
 
   // Quitar like a una canción
   {
-    path: '/me/liked/songs/:id',
-    method: 'DELETE',
+    path: '/api/v1/songs/:id/unlike',
+    method: 'POST',
     handler: handleUnlikeSong,
     protected: true
   }

@@ -59,11 +59,8 @@ export async function handleDeleteById(
 ): Promise<Response> {
     try {
         await deleteFunction(id);
-        // Cambiamos la redirección por una respuesta JSON de éxito.
-        return Response.json(
-            { message: `${entityName} con ID ${id} eliminado correctamente.` },
-            { status: 200 } 
-        );
+        // Devolver 204 No Content para eliminaciones exitosas.
+        return new Response(null, { status: 204 });
     } catch (error) {
         console.error(`Error al eliminar ${entityName} con ID ${id}:`, error);
         return Response.json(
@@ -78,7 +75,6 @@ export async function handleDeleteById(
  * @param req El objeto Request de la solicitud.
  * @param processor Función que toma el Request, lo procesa, y devuelve un array con los argumentos para la función de inserción.
  * @param insertFunction La función del modelo que inserta en la base de datos.
- * @param redirectURL La URL a la que redirigir tras una inserción exitosa.
  * @param entityName Nombre de la entidad (para logging y mensajes de error).
  * @returns Un objeto Response.
  */
@@ -86,19 +82,17 @@ export async function handleInsert(
     req: Request,
     processor: (req: Request) => Promise<any[]>,
     insertFunction: (...args: any[]) => Promise<any>,
-    redirectURL: string,
     entityName: string
 ): Promise<Response> {
     try {
         const args = await processor(req);
+        // TODO: Modificar modelos para que devuelvan el objeto creado y retornarlo aquí.
         await insertFunction(...args);
 
-        return new Response(null, {
-            status: 302,
-            headers: {
-                Location: `${redirectURL}`,
-            },
-        });
+        return Response.json(
+            { message: `${entityName} creado correctamente.` },
+            { status: 201 }
+        );
     } catch (error: any) {
         if (error.message.includes('Faltan campos') || error.message.includes('inválido')) {
             return Response.json({ message: error.message }, { status: 400 });
@@ -207,4 +201,31 @@ export function generateSafeFilename(originalName: string, maxLength: number = 2
     const truncatedBaseName = sanitized.substring(0, safeMaxBaseLength);
 
     return `${timestamp}-${truncatedBaseName}${ext}`;
+}
+
+/**
+ * Maneja la subida de un archivo, incluyendo validación y guardado.
+ * @param file El archivo a subir.
+ * @param allowedExtensions Un array de extensiones permitidas (ej. ['jpg', 'png']).
+ * @param destinationDir El directorio de destino relativo a `static` (ej. '/img/covers').
+ * @returns La ruta relativa del archivo guardado.
+ * @throws Error si el tipo de archivo es inválido.
+ */
+export async function handleFileUpload(
+    file: File,
+    allowedExtensions: string[],
+    destinationDir: string
+): Promise<string> {
+    const fileExtension = file.name.split('.').pop();
+    if (!fileExtension || !allowedExtensions.includes(fileExtension.toLowerCase())) {
+        throw new Error(`Tipo de archivo inválido. Las extensiones permitidas son: ${allowedExtensions.join(', ')}.`);
+    }
+
+    const filename = generateSafeFilename(file.name);
+    const relativePath = `${destinationDir}/${filename}`;
+    const uploadPath = `static${relativePath}`;
+
+    await Bun.write(uploadPath, await file.arrayBuffer());
+
+    return relativePath;
 }

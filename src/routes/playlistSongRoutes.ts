@@ -17,7 +17,7 @@ export const playlistSongRoutes = [
 
   // Obtener canciones dentro de una playlist
   {
-    path: '/playlists/:playlistId/songs',
+    path: '/api/v1/playlists/:id/songs',
     method: 'GET',
     handler: handleGetSongsByPlaylistId,
     protected: true
@@ -25,7 +25,7 @@ export const playlistSongRoutes = [
 
   // Obtener playlists donde NO está una canción
   {
-    path: '/songs/:songId/available-playlists',
+    path: '/api/v1/songs/:id/not-in-playlists',
     method: 'GET',
     handler: handleGetPlaylistsWhereSongNotExist,
     protected: true
@@ -51,17 +51,17 @@ export const playlistSongRoutes = [
 
   // Vista: ver canciones de la playlist
   {
-    path: '/playlists/:playlistId/songs/view',
-    method: 'GET',
-    handler: () => serveHtmlWithSidebar(PLAYLIST_SONGS_VIEW_PATH),
+    path: '/api/v1/playlists/:id/songs',
+    method: 'POST',
+    handler: handleInsertPlaylistSong,
     protected: true
   },
 
   // Vista: formulario para añadir canciones a playlist
   {
-    path: '/playlists/songs/new',
-    method: 'GET',
-    handler: () => serveHtmlWithSidebar(NEW_PLAYLIST_SONG_VIEW_PATH),
+    path: '/api/v1/playlists/:id_playlist/songs/:id_song',
+    method: 'DELETE',
+    handler: handleDeletePlaylistSong,
     protected: true
   }
 
