@@ -10,58 +10,44 @@ import { handleLogin, handleSignUp, getUserId, handleGetSongById, handleDeleteUs
 import { serveHtmlWithSidebar } from '../utilities/view';
 
 export const userRoutes = [
-  // Petición GET para mostrar la página de registro
-  {
-    path: '/signup',
-    method: 'GET',
-    handler: () => new Response(Bun.file(SIGNUP_PATH), { headers: { 'Content-Type': 'text/html' } }),
-    protected: false
-  },
   // Petición POST para manejar el registro
   {
-    path: '/signup',
+    path: '/api/v1/signup',
     method: 'POST',
     handler: handleSignUp,
     protected: false
   },
-  // Petición GET para mostrar la página de login
-  {
-    path: '/login',
-    method: 'GET',
-    handler: () => new Response(Bun.file(LOGIN_PATH), { headers: { 'Content-Type': 'text/html' } }),
-    protected: false
-  },
   // Petición POST para manejar el login
   {
-    path: '/login',
+    path: '/api/v1/login',
     method: 'POST',
     handler: handleLogin,
     protected: false
   },
   // Petición GET para obtener los datos del usuario por id
   {
-    path: '/me/id',
+    path: '/api/v1/me/id',
     method: 'GET',
     handler: getUserId,
     protected: false
   },
   // Petición GET para obtener los datos del usuario por id
   {
-    path: '/get/users/:id',
+    path: '/api/v1/users/:id',
     method: 'GET',
     handler: handleGetSongById,
     protected: true
   },
   // Petición DELETE para eliminar un usuario por id
   {
-    path: '/users/:id',
+    path: '/api/v1/users/:id',
     method: 'DELETE',
     handler: handleDeleteUser,
     protected: true
   },
   // Petición PUT para actualizar un usuario por id
   {
-    path: '/users/:id',
+    path: '/api/v1/users/:id',
     method: 'PUT',
     handler: handleUpdateUser,
     protected: true

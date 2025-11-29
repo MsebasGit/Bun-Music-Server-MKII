@@ -9,6 +9,7 @@ import {
   handleGetAlbumsByArtistId,
   handleSearchAlbums
 } from './../controller/albumController';
+import { withAuthCheck, isArtist } from '../utilities/authUtils';
 
 const NEW_ALBUM_VIEW_PATH = './static/albums/newAlbumView.html';
 const ALBUMS_MENU_VIEW_PATH = './static/albums/albumsMenuView.html';
@@ -19,14 +20,14 @@ const ALBUMS_ARTISTS_VIEW_PATH = './static/albums/albumsArtistView.html'
 export const albumRoutes = [
   // API para obtener todas los albumes
   {
-    path: '/get/albums',
+    path: '/api/v1/albums',
     method: 'GET',
     handler: handleGetAllAlbums,
     protected: true
   },
   // API para buscar albumes
   {
-    path: '/get/albums/search',
+    path: '/api/v1/albums/search',
     method: 'GET',
     handler: handleSearchAlbums,
     protected: true
@@ -40,9 +41,9 @@ export const albumRoutes = [
   },
   // Api para añadir un album (POST)
   {
-    path: '/albums/new',
+    path: '/api/v1/albums',
     method: 'POST',
-    handler: handleInsertAlbum,
+    handler: withAuthCheck(isArtist, true)(handleInsertAlbum),
     protected: true
   },
   // Ruta para ver todas los albumes
@@ -60,13 +61,13 @@ export const albumRoutes = [
     protected: true
   },
   {
-    path: '/get/albums/:id',
+    path: '/api/v1/albums/:id',
     method: 'GET',
     handler: handleGetAlbumById,
     protected: true
   },
   {
-    path: '/get/artists/:id/albums',
+    path: '/api/v1/artists/:id/albums',
     method: 'GET',
     handler: handleGetAlbumsByArtistId, // This should be handleGetAlbumsByArtistId
     protected: true
@@ -78,19 +79,19 @@ export const albumRoutes = [
     protected: true
   },
   {
-    path: '/albums/:id',
+    path: '/api/v1/albums/:id',
     method: 'PUT',
     handler: handleUpdateAlbum,
     protected: true
   },
   {
-    path: '/albums/:id',
+    path: '/api/v1/albums/:id',
     method: 'DELETE',
     handler: handleDeleteAlbum,
     protected: true
   },
   {
-    path: '/get/albums/:id/songs',
+    path: '/api/v1/albums/:id/songs',
     method: 'GET',
     handler: handleGetAllAlbumSongs,
     protected: true

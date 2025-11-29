@@ -8,7 +8,7 @@ import {
   handleSearchSongs
 } from './../controller/songController';
 import { handleGetAllAlbumSongs } from '../controller/albumController'
-import { isArtist, isSongOwner } from '../utilities/authUtils';
+import { isArtist, isSongOwner, withAuthCheck } from '../utilities/authUtils';
 
 // Vista del formulario
 const NEW_SONG_VIEW_PATH = './static/songs/newSongView.html';
@@ -18,24 +18,29 @@ const EDIT_SONG_VIEW_PATH = './static/songs/editSongView.html'
 //
 const ALBUM_SONGS_VIEW_PATH = './static/albums/albumSongsView.html'
 
+const handleUpdateSongAdapter = (req: Request, authResult: any, id: number) => handleUpdateSong(req, id);
+const handleDeleteSongAdapter = (req: Request, authResult: any, id: number) => handleDeleteSong(req, id);
+const editSongViewAdapter = (req: Request, authResult: any, id: number) => serveHtmlWithSidebar(EDIT_SONG_VIEW_PATH);
+
+
 export const songRoutes = [
   // API para obtener todas las canciones (JSON)
   {
-    path: '/get/songs',
+    path: '/api/v1/songs',
     method: 'GET',
     handler: handleGetAllSongs,
     protected: true
   },
   // API para buscar canciones (JSON)
   {
-    path: '/get/songs/search',
+    path: '/api/v1/songs/search',
     method: 'GET',
     handler: handleSearchSongs,
     protected: true
   },
   // API para obtener canción por ID (JSON)
   {
-    path: '/get/albums/:id/songs',
+    path: '/api/v1/albums/:id/songs',
     method: 'GET',
     handler: handleGetAllAlbumSongs,
     protected: true
@@ -56,15 +61,9 @@ export const songRoutes = [
   },
   // API para insertar una nueva canción
   {
-    path: '/songs/new',
+    path: '/api/v1/songs',
     method: 'POST',
-    handler: async (req: Request) => { // Modified handler
-        const authError = await isArtist(req);
-        if (authError instanceof Response) {
-            return authError;
-        }
-        return handleInsertSong(req);
-    },
+    handler: withAuthCheck(isArtist, true)(handleInsertSong),
     protected: true
   },
   // Mostrar detalles de canción obtenida por ID (HTML)
@@ -76,7 +75,7 @@ export const songRoutes = [
   },
   // API para obtener canción por ID (JSON)
   {
-    path: '/get/songs/:id',
+    path: '/api/v1/songs/:id',
     method: 'GET',
     handler: handleGetSongById,
     protected: true
@@ -85,37 +84,19 @@ export const songRoutes = [
   {
     path: '/songs/:id/edit',
     method: 'GET',
-    handler: async (req: Request, id: number) => {
-        const authError = await isSongOwner(req, id);
-        if (authError) {
-            return authError;
-        }
-        return serveHtmlWithSidebar(EDIT_SONG_VIEW_PATH);
-    },
+    handler: withAuthCheck(isSongOwner)(editSongViewAdapter),
     protected: true
   },
   {
-    path: '/songs/:id',
+    path: '/api/v1/songs/:id',
     method: 'PUT',
-    handler: async (req: Request, id: number) => {
-        const authError = await isSongOwner(req, id);
-        if (authError) {
-            return authError;
-        }
-        return handleUpdateSong(req, id);
-    },
+    handler: withAuthCheck(isSongOwner)(handleUpdateSongAdapter),
     protected: true
   },
   {
-    path: '/songs/:id',
+    path: '/api/v1/songs/:id',
     method: 'DELETE',
-    handler: async (req: Request, id: number) => {
-        const authError = await isSongOwner(req, id);
-        if (authError) {
-            return authError;
-        }
-        return handleDeleteSong(req, id);
-    },
+    handler: withAuthCheck(isSongOwner)(handleDeleteSongAdapter),
     protected: true
   }
 

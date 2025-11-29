@@ -1,12 +1,12 @@
 import * as albumModel from './../model/albumModel';
 import * as songModel from './../model/songModel';
-import { isArtist } from '../utilities/authUtils';
 import {
     handleGetAll,
     handleGetById,
     handleInsert,
     handleUpdate,
-    handleDeleteById
+    handleDeleteById,
+    handleFileUpload
 } from '../utilities/controllerUtils';
 
 export {
@@ -53,16 +53,7 @@ async function processAlbumFormForInsert(req: Request, id_artist: number): Promi
         throw new Error('Faltan campos obligatorios: nombre y portada.');
     }
 
-    // Handle file upload
-    const fileExtension = coverFile.name.split('.').pop();
-    if (!fileExtension || !['jpg', 'png', 'jpeg'].includes(fileExtension.toLowerCase())) {
-        throw new Error('El archivo de portada debe ser JPG o PNG.');
-    }
-    const filename = `${Date.now()}-${coverFile.name}`;
-    const cover_path = `/img/covers/${filename}`;
-    const uploadPath = `static${cover_path}`;
-
-    await Bun.write(uploadPath, await coverFile.arrayBuffer());
+    const cover_path = await handleFileUpload(coverFile, ['jpg', 'png', 'jpeg'], '/img/covers');
 
     return [name, cover_path, id_artist];
 }
@@ -84,14 +75,7 @@ async function processAlbumFormForUpdate(req: Request): Promise<[string, string]
 
     let cover_path: string;
     if (coverFile && coverFile.size > 0) { // New file uploaded
-        const fileExtension = coverFile.name.split('.').pop();
-        if (!fileExtension || !['jpg', 'png', 'jpeg'].includes(fileExtension.toLowerCase())) {
-            throw new Error('El archivo de portada debe ser JPG o PNG.');
-        }
-        const filename = `${Date.now()}-${coverFile.name}`;
-        cover_path = `/img/covers/${filename}`;
-        const uploadPath = `static${cover_path}`;
-        await Bun.write(uploadPath, await coverFile.arrayBuffer());
+        cover_path = await handleFileUpload(coverFile, ['jpg', 'png', 'jpeg'], '/img/covers');
     } else if (existing_cover_path) { // No new file, use existing path
         cover_path = existing_cover_path;
     } else {
@@ -118,21 +102,14 @@ async function handleGetAlbumsByArtistId(req: Request, id_artist: number): Promi
 
 
 // POST /albums/new
-async function handleInsertAlbum(req: Request): Promise<Response> {
+async function handleInsertAlbum(req: Request, artistResult: { id_artist: number }): Promise<Response> {
     try {
-        const artistResult = await isArtist(req);
-        if (artistResult instanceof Response) {
-            return artistResult;
-        }
         const id_artist = artistResult.id_artist;
 
         const formData = await processAlbumFormForInsert(req, id_artist);
         await albumModel.insertAlbum(...formData);
         
-        return new Response(null, {
-            status: 302,
-            headers: { 'Location': "/songs/new" }
-        });
+        return Response.json({ message: "Álbum creado correctamente" }, { status: 201 });
     } catch (error: any) {
         console.error(`Error en handleInsert para álbum: ${error.message}`);
         return new Response(JSON.stringify({ message: `Error al insertar álbum` }), { status: 500 });

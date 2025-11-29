@@ -51,7 +51,7 @@ async function handleGetPlaylistById(req: Request, id: number): Promise<Response
 
 // POST /playlists
 async function handleInsertPlaylist(req: Request): Promise<Response> {
-    return handleInsert(req, processPlaylistForm, playlistModel.insertPlaylist, "/playlists", 'playlist');
+    return handleInsert(req, processPlaylistForm, playlistModel.insertPlaylist, 'playlist');
 }
 
 // PUT /playlists/:id

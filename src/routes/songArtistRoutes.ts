@@ -14,21 +14,21 @@ const ME_SONGS_ARTISTS_VIEW_PATH = './static/songArtists/meSongsView.html'
 export const songArtistRoutes = [
   // API de las canciones de un artista por ID
   {
-    path: '/get/artists/:id/songs',
+    path: '/api/v1/artists/:id/songs',
     method: 'GET',
     handler: handleGetSongsByArtistId,
     protected: true
   },
   // API de los artistas de una cancion por ID
   {
-    path: '/get/songs/:id/artists',
+    path: '/api/v1/songs/:id/artists',
     method: 'GET',
     handler: handleGetArtistsBySongId,
     protected: true
   },
   // API de los artistas donde no esta una canción por ID
   {
-    path: '/get/songs/:id/not/artists',
+    path: '/api/v1/songs/:id/not-artists',
     method: 'GET',
     handler: handleGetArtistsWhereSongNotExist,
     protected: true
@@ -49,7 +49,7 @@ export const songArtistRoutes = [
     protected: true
   },
   {
-    path: '/songs/artists/new',
+    path: '/api/v1/songs/:id/artists',
     method: 'POST',
     handler: handleInsertSongArtist,
     protected: true
@@ -57,7 +57,7 @@ export const songArtistRoutes = [
 
   // Borrar artista de una cancion con DELETE
   {
-    path: '/artists/:id_artist/songs/:id_song',
+    path: '/api/v1/artists/:id_artist/songs/:id_song',
     method: 'DELETE',
     handler: handleDeleteSongArtist,
     protected: true

@@ -1,0 +1,1 @@
+<p>New Artist Page</p>

@@ -7,19 +7,20 @@ import {
   handleDeleteSocialNetwork,
   handleGetSocialNetworksByArtistId
 } from './../controller/socialNetworkController';
+import { withAuthCheck, isArtist } from '../utilities/authUtils';
 
 const NEW_SOCIAL_NETWORK_VIEW_PATH = './static/socialNetworks/newSocialNetworkView.html';
 const SOCIAL_NETWORKS_ARTISTS_VIEW_PATH = './static/socialNetworks/socialNetworkArtistView.html'
 
 export const socialNetworkRoutes = [
   {
-    path: '/get/social-networks',
+    path: '/api/v1/social-networks',
     method: 'GET',
     handler: handleGetAllSocialNetworks,
     protected: true
   },
   {
-    path: '/get/artists/:id/social-networks',
+    path: '/api/v1/artists/:id/social-networks',
     method: 'GET',
     handler: handleGetSocialNetworksByArtistId,
     protected: true
@@ -38,25 +39,25 @@ export const socialNetworkRoutes = [
     protected: true
   },
   {
-    path: '/social-networks/new',
+    path: '/api/v1/social-networks',
     method: 'POST',
-    handler: handleInsertSocialNetwork,
+    handler: withAuthCheck(isArtist, true)(handleInsertSocialNetwork),
     protected: true
   },
   {
-    path: '/social-networks/:id',
+    path: '/api/v1/social-networks/:id',
     method: 'GET',
     handler: handleGetSocialNetworkById,
     protected: true
   },
   {
-    path: '/social-networks/:id',
+    path: '/api/v1/social-networks/:id',
     method: 'PUT',
-    handler: handleUpdateSocialNetwork,
+    handler: withAuthCheck(isArtist, true)(handleUpdateSocialNetwork),
     protected: true
   },
   {
-    path: '/social-networks/:id',
+    path: '/api/v1/social-networks/:id',
     method: 'DELETE',
     handler: handleDeleteSocialNetwork,
     protected: true

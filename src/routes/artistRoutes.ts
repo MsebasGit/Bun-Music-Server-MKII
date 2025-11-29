@@ -14,14 +14,14 @@ const ARTISTS_MENU_VIEW_PATH = './static/artists/artistsMenuView.html';
 
 export const artistRoutes = [
   {
-    path: '/get/artists',
+    path: '/api/v1/artists',
     method: 'GET',
     handler: handleGetAllArtists,
     protected: true
   },
   // API para buscar artistas
   {
-    path: '/get/artists/search',
+    path: '/api/v1/artists/search',
     method: 'GET',
     handler: handleSearchArtists,
     protected: true
@@ -40,31 +40,31 @@ export const artistRoutes = [
     protected: true
   },
   {
-    path: '/artists/new',
+    path: '/api/v1/artists',
     method: 'POST',
     handler: handleInsertArtist,
     protected: true
   },
   {
-    path: '/artists/user/:id',
+    path: '/api/v1/artists/user/:id',
     method: 'GET',
     handler: handleGetArtistByUserId,
     protected: true
   },
   {
-    path: '/get/artists/:id',
+    path: '/api/v1/artists/:id',
     method: 'GET',
     handler: handleGetArtistById,
     protected: true
   },
   {
-    path: '/artists/:id',
+    path: '/api/v1/artists/:id',
     method: 'PUT',
     handler: handleUpdateArtist,
     protected: true
   },
   {
-    path: '/artists/:id',
+    path: '/api/v1/artists/:id',
     method: 'DELETE',
     handler: handleDeleteArtist,
     protected: true

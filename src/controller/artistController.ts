@@ -75,7 +75,7 @@ async function handleGetArtistByUserId(req: Request, id_user: number): Promise<R
 
 // POST /artists/new
 async function handleInsertArtist(req: Request): Promise<Response> {
-    return handleInsert(req, processArtistForm, artistModel.insertArtist, "/artists", 'artista');
+    return handleInsert(req, processArtistForm, artistModel.insertArtist, 'artista');
 }
 
 // PUT /artists/:id

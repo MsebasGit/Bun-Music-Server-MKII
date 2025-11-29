@@ -1,5 +1,4 @@
 import * as socialNetworkModel from '../model/socialNetworkModel';
-import { isArtist } from '../utilities/authUtils';
 import { 
     handleGetAll, 
     handleGetById, 
@@ -47,21 +46,14 @@ async function handleGetSocialNetworksByArtistId(req: Request, id_artist: number
 }
 
 // POST /social-network
-async function handleInsertSocialNetwork(req: Request): Promise<Response> {
+async function handleInsertSocialNetwork(req: Request, artistResult: { id_artist: number }): Promise<Response> {
     try {
-        const artistResult = await isArtist(req);
-        if (artistResult instanceof Response) {
-            return artistResult;
-        }
         const id_artist = artistResult.id_artist;
 
         const [name, url] = await processSocialNetworkForm(req);
         await socialNetworkModel.insertSocialNetwork(name, url, id_artist);
         
-        return new Response(null, {
-            status: 302,
-            headers: { 'Location': "/social-networks/new" }
-        });
+        return Response.json({ message: "Red social creada correctamente" }, { status: 201 });
     } catch (error: any) {
         console.error(`Error en handleInsertSocialNetwork: ${error.message}`);
         return new Response(JSON.stringify({ message: `Error al insertar red social` }), { status: 500 });
@@ -69,21 +61,14 @@ async function handleInsertSocialNetwork(req: Request): Promise<Response> {
 }
 
 // PUT /social-network/:id
-async function handleUpdateSocialNetwork(req: Request, id: number): Promise<Response> {
+async function handleUpdateSocialNetwork(req: Request, artistResult: { id_artist: number }, id: number): Promise<Response> {
     try {
-        const artistResult = await isArtist(req);
-        if (artistResult instanceof Response) {
-            return artistResult;
-        }
         const id_artist = artistResult.id_artist;
 
         const [name, url] = await processSocialNetworkForm(req);
         await socialNetworkModel.updateSocialNetwork(id, name, url, id_artist);
         
-        return new Response(null, {
-            status: 302,
-            headers: { 'Location': "/social-networks/new" }
-        });
+        return Response.json({ message: "Red social actualizada correctamente" }, { status: 200 });
     } catch (error: any) {
         console.error(`Error en handleUpdateSocialNetwork: ${error.message}`);
         return new Response(JSON.stringify({ message: `Error al actualizar red social` }), { status: 500 });
