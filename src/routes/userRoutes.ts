@@ -1,83 +1,102 @@
-// routes/userRoutes.ts
-
-// ⚠️ Cambia la importación: ahora solo importamos la RUTA como un string, NO el contenido.
-const SIGNUP_PATH = './static/users/signup.html';
-const LOGIN_PATH = './static/users/login.html';
-const EDIT_USER_VIEW_PATH = './static/users/editUserView.html';
-const ME_MENU_VIEW = './static/meMenu.html'
-
-import { handleLogin, handleSignUp, getUserId, handleGetSongById, handleDeleteUser, handleUpdateUser } from './../controller/userController';
 import { serveHtmlWithSidebar } from '../utilities/view';
+import {
+  handleLogin,
+  handleSignUp,
+  handleGetUserById,
+  handleDeleteUser,
+  handleUpdateUser
+} from './../controller/userController';
+
+// Vistas
+const SIGNUP_VIEW_PATH = './static/users/signup.html';
+const LOGIN_VIEW_PATH = './static/users/login.html';
+const EDIT_USER_VIEW_PATH = './static/users/editUserView.html';
+const ME_MENU_VIEW_PATH = './static/meMenu.html';
 
 export const userRoutes = [
-  // Petición GET para mostrar la página de registro
+
+  //            VISTAS HTML
+
+  // Página de registro
   {
     path: '/signup',
     method: 'GET',
-    handler: () => new Response(Bun.file(SIGNUP_PATH), { headers: { 'Content-Type': 'text/html' } }),
+    handler: () => serveHtmlWithSidebar(SIGNUP_VIEW_PATH),
     protected: false
   },
-  // Petición POST para manejar el registro
-  {
-    path: '/signup',
-    method: 'POST',
-    handler: handleSignUp,
-    protected: false
-  },
-  // Petición GET para mostrar la página de login
+
+  // Página de login
   {
     path: '/login',
     method: 'GET',
-    handler: () => new Response(Bun.file(LOGIN_PATH), { headers: { 'Content-Type': 'text/html' } }),
+    handler: () => serveHtmlWithSidebar(LOGIN_VIEW_PATH),
     protected: false
   },
-  // Petición POST para manejar el login
-  {
-    path: '/login',
-    method: 'POST',
-    handler: handleLogin,
-    protected: false
-  },
-  // Petición GET para obtener los datos del usuario por id
-  {
-    path: '/me/id',
-    method: 'GET',
-    handler: getUserId,
-    protected: false
-  },
-  // Petición GET para obtener los datos del usuario por id
-  {
-    path: '/get/users/:id',
-    method: 'GET',
-    handler: handleGetSongById,
-    protected: true
-  },
-  // Petición DELETE para eliminar un usuario por id
-  {
-    path: '/users/:id',
-    method: 'DELETE',
-    handler: handleDeleteUser,
-    protected: true
-  },
-  // Petición PUT para actualizar un usuario por id
-  {
-    path: '/users/:id',
-    method: 'PUT',
-    handler: handleUpdateUser,
-    protected: true
-  },
-  // Petición GET para ver formulario de edición
+
+  // Formulario para editar usuario
   {
     path: '/users/:id/edit',
     method: 'GET',
     handler: () => serveHtmlWithSidebar(EDIT_USER_VIEW_PATH),
     protected: true
   },
-  // Petición GET para ver formulario de edición
+
+  // Vista de perfil propio
   {
     path: '/me',
     method: 'GET',
-    handler: () => serveHtmlWithSidebar(ME_MENU_VIEW),
+    handler: () => serveHtmlWithSidebar(ME_MENU_VIEW_PATH),
     protected: true
-  }  
+  },
+
+  //            API REST
+
+  // Registro de usuario
+  {
+    path: '/signup',
+    method: 'POST',
+    handler: handleSignUp,
+    protected: false
+  },
+
+  // Login
+  {
+    path: '/login',
+    method: 'POST',
+    handler: handleLogin,
+    protected: false
+  },
+
+  // Obtener datos de usuario propio
+  {
+    path: '/me',
+    method: 'GET',
+    handler: handleGetUserById,
+    protected: true
+  },
+
+  // Obtener datos de un usuario por ID
+  {
+    path: '/users/:id',
+    method: 'GET',
+    handler: handleGetUserById,
+    protected: true
+  },
+
+  // Actualizar usuario por ID
+  {
+    path: '/users/:id',
+    method: 'PUT',
+    handler: handleUpdateUser,
+    protected: true
+  },
+
+  // Eliminar usuario por ID
+  {
+    path: '/users/:id',
+    method: 'DELETE',
+    handler: handleDeleteUser,
+    protected: true
+  }
+
 ];
