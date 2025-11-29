@@ -7,50 +7,63 @@ import {
 } from './../controller/playlistSongController';
 
 const NEW_PLAYLIST_SONG_VIEW_PATH = './static/playlistSongs/newPlaylistSongView.html';
-const PLAYLIST_SONGS_VIEW_PATH = './static/playlistSongs/playlistSongsView.html'
+const PLAYLIST_SONGS_VIEW_PATH = './static/playlistSongs/playlistSongsView.html';
 
 export const playlistSongRoutes = [
-  // API de las canciones de una playlist por ID
+
+
+  //            API REST
+
+
+  // Obtener canciones dentro de una playlist
   {
-    path: '/get/playlists/:id/songs',
+    path: '/playlists/:playlistId/songs',
     method: 'GET',
     handler: handleGetSongsByPlaylistId,
     protected: true
   },
-  // API de las playlists donde no esta una canción por ID
+
+  // Obtener playlists donde NO está una canción
   {
-    path: '/get/songs/:id/not/playlists',
+    path: '/songs/:songId/available-playlists',
     method: 'GET',
     handler: handleGetPlaylistsWhereSongNotExist,
     protected: true
   },
-  // Vista de las canciones que se encuentran en una playlist por ID
+
+  // Agregar una canción a una playlist
   {
-    path: '/playlists/:id/songs',
+    path: '/playlists/:playlistId/songs',
+    method: 'POST',
+    handler: handleInsertPlaylistSong,
+    protected: true
+  },
+
+  // Eliminar una canción de una playlist
+  {
+    path: '/playlists/:playlistId/songs/:songId',
+    method: 'DELETE',
+    handler: handleDeletePlaylistSong,
+    protected: true
+  },
+
+  //            VISTAS HTML
+
+  // Vista: ver canciones de la playlist
+  {
+    path: '/playlists/:playlistId/songs/view',
     method: 'GET',
     handler: () => serveHtmlWithSidebar(PLAYLIST_SONGS_VIEW_PATH),
     protected: true
   },
-  // formulario para añadir añadir una canción a una playlist (con get)
+
+  // Vista: formulario para añadir canciones a playlist
   {
     path: '/playlists/songs/new',
     method: 'GET',
     handler: () => serveHtmlWithSidebar(NEW_PLAYLIST_SONG_VIEW_PATH),
     protected: true
-  },
-  // Ruta para añadir una canción una canción a una playlist
-  {
-    path: '/playlists/songs/new/:id',
-    method: 'POST',
-    handler: handleInsertPlaylistSong,
-    protected: true
-  },
-  
-  // Borrar canción de una playlist con DELETE
-  {
-    path: '/playlists/:id_playlist/songs/:id_song',
-    method: 'DELETE',
-    handler: handleDeletePlaylistSong,
-    protected: true
   }
+
 ];
+

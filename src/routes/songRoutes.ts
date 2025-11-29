@@ -7,117 +7,124 @@ import {
   handleDeleteSong,
   handleSearchSongs
 } from './../controller/songController';
-import { handleGetAllAlbumSongs } from '../controller/albumController'
+import { handleGetAllAlbumSongs } from '../controller/albumController';
 import { isArtist, isSongOwner } from '../utilities/authUtils';
 
-// Vista del formulario
+// Vistas
 const NEW_SONG_VIEW_PATH = './static/songs/newSongView.html';
-// Vista de de los detalles de una canción obtenida por detalles
-const SONG_DETAIL_VIEW_PATH = './static/songs/showSongByID.html'
-const EDIT_SONG_VIEW_PATH = './static/songs/editSongView.html'
-//
-const ALBUM_SONGS_VIEW_PATH = './static/albums/albumSongsView.html'
+const SONG_DETAIL_VIEW_PATH = './static/songs/showSongByID.html';
+const EDIT_SONG_VIEW_PATH = './static/songs/editSongView.html';
+const ALBUM_SONGS_VIEW_PATH = './static/albums/albumSongsView.html';
 
 export const songRoutes = [
-  // API para obtener todas las canciones (JSON)
+
+  //            API REST
+
+  // Obtener todas las canciones
   {
-    path: '/get/songs',
+    path: '/songs',
     method: 'GET',
     handler: handleGetAllSongs,
     protected: true
   },
-  // API para buscar canciones (JSON)
+
+  // Buscar canciones
   {
-    path: '/get/songs/search',
+    path: '/songs/search',
     method: 'GET',
     handler: handleSearchSongs,
     protected: true
   },
-  // API para obtener canción por ID (JSON)
+
+  // Obtener canciones de un álbum
   {
-    path: '/get/albums/:id/songs',
+    path: '/albums/:albumId/songs',
     method: 'GET',
     handler: handleGetAllAlbumSongs,
     protected: true
   },
-  // Ruta de la vista de las canciones que se encuentran en un album por ID
+
+  // Obtener canción por ID
   {
-    path: '/albums/:id/songs',
+    path: '/songs/:id',
     method: 'GET',
-    handler: () => serveHtmlWithSidebar(ALBUM_SONGS_VIEW_PATH),
+    handler: handleGetSongById,
     protected: true
   },
-  // Ruta de la vista del formulario para añadir una canción (JSON
+
+  // Crear nueva canción
+  {
+    path: '/songs',
+    method: 'POST',
+    handler: async (req: Request) => {
+      const authError = await isArtist(req);
+      if (authError instanceof Response) return authError;
+      return handleInsertSong(req);
+    },
+    protected: true
+  },
+
+  // Actualizar canción
+  {
+    path: '/songs/:id',
+    method: 'PUT',
+    handler: async (req: Request, id: number) => {
+      const authError = await isSongOwner(req, id);
+      if (authError) return authError;
+      return handleUpdateSong(req, id);
+    },
+    protected: true
+  },
+
+  // Eliminar canción
+  {
+    path: '/songs/:id',
+    method: 'DELETE',
+    handler: async (req: Request, id: number) => {
+      const authError = await isSongOwner(req, id);
+      if (authError) return authError;
+      return handleDeleteSong(req, id);
+    },
+    protected: true
+  },
+
+  //            VISTAS HTML
+
+  // Formulario para nueva canción
   {
     path: '/songs/new',
     method: 'GET',
     handler: () => serveHtmlWithSidebar(NEW_SONG_VIEW_PATH),
     protected: true
   },
-  // API para insertar una nueva canción
+
+  // Detalle de canción por ID
   {
-    path: '/songs/new',
-    method: 'POST',
-    handler: async (req: Request) => { // Modified handler
-        const authError = await isArtist(req);
-        if (authError instanceof Response) {
-            return authError;
-        }
-        return handleInsertSong(req);
-    },
-    protected: true
-  },
-  // Mostrar detalles de canción obtenida por ID (HTML)
-  {
-    path: '/songs/:id',
+    path: '/songs/:id/view',
     method: 'GET',
     handler: () => serveHtmlWithSidebar(SONG_DETAIL_VIEW_PATH),
     protected: true
   },
-  // API para obtener canción por ID (JSON)
-  {
-    path: '/get/songs/:id',
-    method: 'GET',
-    handler: handleGetSongById,
-    protected: true
-  },
-  // Petición GET para ver formulario de edición
+
+  // Formulario para editar canción
   {
     path: '/songs/:id/edit',
     method: 'GET',
     handler: async (req: Request, id: number) => {
-        const authError = await isSongOwner(req, id);
-        if (authError) {
-            return authError;
-        }
-        return serveHtmlWithSidebar(EDIT_SONG_VIEW_PATH);
+      const authError = await isSongOwner(req, id);
+      if (authError) return authError;
+      return serveHtmlWithSidebar(EDIT_SONG_VIEW_PATH);
     },
     protected: true
   },
+
+  // Vista de canciones de un álbum
   {
-    path: '/songs/:id',
-    method: 'PUT',
-    handler: async (req: Request, id: number) => {
-        const authError = await isSongOwner(req, id);
-        if (authError) {
-            return authError;
-        }
-        return handleUpdateSong(req, id);
-    },
-    protected: true
-  },
-  {
-    path: '/songs/:id',
-    method: 'DELETE',
-    handler: async (req: Request, id: number) => {
-        const authError = await isSongOwner(req, id);
-        if (authError) {
-            return authError;
-        }
-        return handleDeleteSong(req, id);
-    },
+    path: '/albums/:albumId/songs/view',
+    method: 'GET',
+    handler: () => serveHtmlWithSidebar(ALBUM_SONGS_VIEW_PATH),
     protected: true
   }
 
-
 ];
+
