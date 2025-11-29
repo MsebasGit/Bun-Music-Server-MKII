@@ -13,60 +13,83 @@ const NEW_ARTIST_VIEW_PATH = './static/artists/newArtistView.html';
 const ARTISTS_MENU_VIEW_PATH = './static/artists/artistsMenuView.html';
 
 export const artistRoutes = [
+
+  //          API REST
+  
+  // Obtener todos los artistas
   {
-    path: '/get/artists',
+    path: '/artists',
     method: 'GET',
     handler: handleGetAllArtists,
     protected: true
   },
-  // API para buscar artistas
+
+  // Buscar artistas
   {
-    path: '/get/artists/search',
+    path: '/artists/search',
     method: 'GET',
     handler: handleSearchArtists,
     protected: true
   },
-  // Ruta para ver todos los artistas
+
+  // Obtener artista por ID
   {
-    path: '/artists',
-    method: 'GET',
-    handler: () => serveHtmlWithSidebar(ARTISTS_MENU_VIEW_PATH),
-    protected: true
-  },
-  {
-    path: '/artists/new',
-    method: 'GET',
-    handler: () => serveHtmlWithSidebar(NEW_ARTIST_VIEW_PATH),
-    protected: true
-  },
-  {
-    path: '/artists/new',
-    method: 'POST',
-    handler: handleInsertArtist,
-    protected: true
-  },
-  {
-    path: '/artists/user/:id',
-    method: 'GET',
-    handler: handleGetArtistByUserId,
-    protected: true
-  },
-  {
-    path: '/get/artists/:id',
+    path: '/artists/:id',
     method: 'GET',
     handler: handleGetArtistById,
     protected: true
   },
+
+  // Obtener artista asociado a un usuario
+  {
+    path: '/users/:id/artists',
+    method: 'GET',
+    handler: handleGetArtistByUserId,
+    protected: true
+  },
+
+  // Crear artista
+  {
+    path: '/artists',
+    method: 'POST',
+    handler: handleInsertArtist,
+    protected: true
+  },
+
+  // Actualizar artista
   {
     path: '/artists/:id',
     method: 'PUT',
     handler: handleUpdateArtist,
     protected: true
   },
+
+  // Eliminar artista
   {
     path: '/artists/:id',
     method: 'DELETE',
     handler: handleDeleteArtist,
     protected: true
+  },
+
+  //            VISTAS
+
+
+  // Vista lista de artistas
+  {
+    path: '/artists',
+    method: 'GET',
+    handler: () => serveHtmlWithSidebar(ARTISTS_MENU_VIEW_PATH),
+    protected: true
+  },
+
+  // Formulario para crear artista
+  {
+    path: '/artists/new',
+    method: 'GET',
+    handler: () => serveHtmlWithSidebar(NEW_ARTIST_VIEW_PATH),
+    protected: true
   }
+
 ];
+
