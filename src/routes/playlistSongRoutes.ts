@@ -7,50 +7,63 @@ import {
 } from './../controller/playlistSongController';
 
 const NEW_PLAYLIST_SONG_VIEW_PATH = './static/playlistSongs/newPlaylistSongView.html';
-const PLAYLIST_SONGS_VIEW_PATH = './static/playlistSongs/playlistSongsView.html'
+const PLAYLIST_SONGS_VIEW_PATH = './static/playlistSongs/playlistSongsView.html';
 
 export const playlistSongRoutes = [
-  // API de las canciones de una playlist por ID
+
+
+  //            API REST
+
+
+  // Obtener canciones dentro de una playlist
   {
     path: '/api/v1/playlists/:id/songs',
     method: 'GET',
     handler: handleGetSongsByPlaylistId,
     protected: true
   },
-  // API de las playlists donde no esta una canción por ID
+
+  // Obtener playlists donde NO está una canción
   {
     path: '/api/v1/songs/:id/not-in-playlists',
     method: 'GET',
     handler: handleGetPlaylistsWhereSongNotExist,
     protected: true
   },
-  // Vista de las canciones que se encuentran en una playlist por ID
+
+  // Agregar una canción a una playlist
   {
-    path: '/playlists/:id/songs',
-    method: 'GET',
-    handler: () => serveHtmlWithSidebar(PLAYLIST_SONGS_VIEW_PATH),
+    path: '/playlists/:playlistId/songs',
+    method: 'POST',
+    handler: handleInsertPlaylistSong,
     protected: true
   },
-  // formulario para añadir añadir una canción a una playlist (con get)
+
+  // Eliminar una canción de una playlist
   {
-    path: '/playlists/songs/new',
-    method: 'GET',
-    handler: () => serveHtmlWithSidebar(NEW_PLAYLIST_SONG_VIEW_PATH),
+    path: '/playlists/:playlistId/songs/:songId',
+    method: 'DELETE',
+    handler: handleDeletePlaylistSong,
     protected: true
   },
-  // Ruta para añadir una canción una canción a una playlist
+
+  //            VISTAS HTML
+
+  // Vista: ver canciones de la playlist
   {
     path: '/api/v1/playlists/:id/songs',
     method: 'POST',
     handler: handleInsertPlaylistSong,
     protected: true
   },
-  
-  // Borrar canción de una playlist con DELETE
+
+  // Vista: formulario para añadir canciones a playlist
   {
     path: '/api/v1/playlists/:id_playlist/songs/:id_song',
     method: 'DELETE',
     handler: handleDeletePlaylistSong,
     protected: true
   }
+
 ];
+

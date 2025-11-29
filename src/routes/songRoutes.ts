@@ -10,13 +10,11 @@ import {
 import { handleGetAllAlbumSongs } from '../controller/albumController'
 import { isArtist, isSongOwner, withAuthCheck } from '../utilities/authUtils';
 
-// Vista del formulario
+// Vistas
 const NEW_SONG_VIEW_PATH = './static/songs/newSongView.html';
-// Vista de de los detalles de una canción obtenida por detalles
-const SONG_DETAIL_VIEW_PATH = './static/songs/showSongByID.html'
-const EDIT_SONG_VIEW_PATH = './static/songs/editSongView.html'
-//
-const ALBUM_SONGS_VIEW_PATH = './static/albums/albumSongsView.html'
+const SONG_DETAIL_VIEW_PATH = './static/songs/showSongByID.html';
+const EDIT_SONG_VIEW_PATH = './static/songs/editSongView.html';
+const ALBUM_SONGS_VIEW_PATH = './static/albums/albumSongsView.html';
 
 const handleUpdateSongAdapter = (req: Request, authResult: any, id: number) => handleUpdateSong(req, id);
 const handleDeleteSongAdapter = (req: Request, authResult: any, id: number) => handleDeleteSong(req, id);
@@ -24,75 +22,100 @@ const editSongViewAdapter = (req: Request, authResult: any, id: number) => serve
 
 
 export const songRoutes = [
-  // API para obtener todas las canciones (JSON)
+
+  //            API REST
+
+  // Obtener todas las canciones
   {
     path: '/api/v1/songs',
     method: 'GET',
     handler: handleGetAllSongs,
     protected: true
   },
-  // API para buscar canciones (JSON)
+
+  // Buscar canciones
   {
     path: '/api/v1/songs/search',
     method: 'GET',
     handler: handleSearchSongs,
     protected: true
   },
-  // API para obtener canción por ID (JSON)
+
+  // Obtener canciones de un álbum
   {
     path: '/api/v1/albums/:id/songs',
     method: 'GET',
     handler: handleGetAllAlbumSongs,
     protected: true
   },
-  // Ruta de la vista de las canciones que se encuentran en un album por ID
+
+  // Obtener canción por ID
   {
-    path: '/albums/:id/songs',
+    path: '/songs/:id',
     method: 'GET',
-    handler: () => serveHtmlWithSidebar(ALBUM_SONGS_VIEW_PATH),
+    handler: handleGetSongById,
     protected: true
   },
-  // Ruta de la vista del formulario para añadir una canción (JSON
+
+  // Crear nueva canción
   {
-    path: '/songs/new',
-    method: 'GET',
-    handler: () => serveHtmlWithSidebar(NEW_SONG_VIEW_PATH),
+    path: '/songs',
+    method: 'POST',
+    handler: async (req: Request) => {
+      const authError = await isArtist(req);
+      if (authError instanceof Response) return authError;
+      return handleInsertSong(req);
+    },
     protected: true
   },
-  // API para insertar una nueva canción
+
+  // Actualizar canción
   {
     path: '/api/v1/songs',
     method: 'POST',
     handler: withAuthCheck(isArtist, true)(handleInsertSong),
     protected: true
   },
-  // Mostrar detalles de canción obtenida por ID (HTML)
+
+  // Eliminar canción
   {
     path: '/songs/:id',
-    method: 'GET',
-    handler: () => serveHtmlWithSidebar(SONG_DETAIL_VIEW_PATH),
+    method: 'DELETE',
+    handler: async (req: Request, id: number) => {
+      const authError = await isSongOwner(req, id);
+      if (authError) return authError;
+      return handleDeleteSong(req, id);
+    },
     protected: true
   },
-  // API para obtener canción por ID (JSON)
+
+  //            VISTAS HTML
+
+  // Formulario para nueva canción
   {
     path: '/api/v1/songs/:id',
     method: 'GET',
-    handler: handleGetSongById,
+    handler: () => serveHtmlWithSidebar(NEW_SONG_VIEW_PATH),
     protected: true
   },
-  // Petición GET para ver formulario de edición
+
+  // Detalle de canción por ID
   {
-    path: '/songs/:id/edit',
+    path: '/songs/:id/view',
     method: 'GET',
     handler: withAuthCheck(isSongOwner)(editSongViewAdapter),
     protected: true
   },
+
+  // Formulario para editar canción
   {
     path: '/api/v1/songs/:id',
     method: 'PUT',
     handler: withAuthCheck(isSongOwner)(handleUpdateSongAdapter),
     protected: true
   },
+
+  // Vista de canciones de un álbum
   {
     path: '/api/v1/songs/:id',
     method: 'DELETE',
@@ -100,5 +123,5 @@ export const songRoutes = [
     protected: true
   }
 
-
 ];
+

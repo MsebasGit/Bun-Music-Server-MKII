@@ -8,32 +8,36 @@ import {
 } from './../controller/songArtistController';
 
 const NEW_SONG_ARTIST_VIEW_PATH = './static/songArtists/newSongArtistView.html';
-const SONGS_ARTISTS_VIEW_PATH = './static/songArtists/songsArtistView.html'
-const ME_SONGS_ARTISTS_VIEW_PATH = './static/songArtists/meSongsView.html'
+const SONGS_ARTISTS_VIEW_PATH = './static/songArtists/songsArtistView.html';
+const ME_SONGS_ARTISTS_VIEW_PATH = './static/songArtists/meSongsView.html';
+const MANAGE_COLLABORATORS_VIEW_PATH = './static/songArtists/manageCollaboratorsView.html';
 
 export const songArtistRoutes = [
-  // API de las canciones de un artista por ID
+  // API: canciones de un artista por ID
   {
     path: '/api/v1/artists/:id/songs',
     method: 'GET',
     handler: handleGetSongsByArtistId,
     protected: true
   },
-  // API de los artistas de una cancion por ID
+
+  // API: artistas de una canción por ID
   {
     path: '/api/v1/songs/:id/artists',
     method: 'GET',
     handler: handleGetArtistsBySongId,
     protected: true
   },
-  // API de los artistas donde no esta una canción por ID
+
+  // API: artistas donde NO está una canción por ID
   {
     path: '/api/v1/songs/:id/not-artists',
     method: 'GET',
     handler: handleGetArtistsWhereSongNotExist,
     protected: true
   },
-  // Vista formulario para añadir añadir un artista a una cancion (con get)
+
+  // Vista: formulario para añadir un artista a una canción
   {
     path: '/songs/artists/new',
     method: 'GET',
@@ -41,13 +45,7 @@ export const songArtistRoutes = [
     protected: true
   },
 
-  // Vista de las canciones que tiene un artista por ID
-  {
-    path: '/artists/:id/songs',
-    method: 'GET',
-    handler: () => serveHtmlWithSidebar(SONGS_ARTISTS_VIEW_PATH),
-    protected: true
-  },
+  // Agregar artista a canción (POST)
   {
     path: '/api/v1/songs/:id/artists',
     method: 'POST',
@@ -55,25 +53,35 @@ export const songArtistRoutes = [
     protected: true
   },
 
-  // Borrar artista de una cancion con DELETE
+  // Vista: canciones de un artista por ID
+  {
+    path: '/artists/:id/songs',
+    method: 'GET',
+    handler: () => serveHtmlWithSidebar(SONGS_ARTISTS_VIEW_PATH),
+    protected: true
+  },
+
+  // Eliminar artista de una canción (DELETE)
   {
     path: '/api/v1/artists/:id_artist/songs/:id_song',
     method: 'DELETE',
     handler: handleDeleteSongArtist,
     protected: true
   },
-  // Vista de canciones de artista (para administración)
+
+  // Vista: canciones del artista que administra (usuario logueado)
   {
     path: '/me/songs',
     method: 'GET',
     handler: () => serveHtmlWithSidebar(ME_SONGS_ARTISTS_VIEW_PATH),
     protected: true
   },
-  // Vista para administrar colaboradores de una canción
+
+  // Vista: administración de colaboradores de una canción
   {
     path: '/songs/collaborators/manage',
     method: 'GET',
-    handler: () => serveHtmlWithSidebar('./static/songArtists/manageCollaboratorsView.html'),
+    handler: () => serveHtmlWithSidebar(MANAGE_COLLABORATORS_VIEW_PATH),
     protected: true
-  },
+  }
 ];

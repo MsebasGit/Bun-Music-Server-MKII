@@ -30,7 +30,7 @@ export const playlistRoutes = [
   {
     path: '/api/v1/playlists/:id',
     method: 'GET',
-    handler: handleGetPlaylistById,
+    handler: () => serveHtmlWithSidebar(EDIT_PLAYLIST_VIEW_PATH),
     protected: true
   },
 
@@ -49,6 +49,7 @@ export const playlistRoutes = [
     handler: handleDeletePlaylist,
     protected: true
   }
+
 ];
 
 // RESUMEN:
