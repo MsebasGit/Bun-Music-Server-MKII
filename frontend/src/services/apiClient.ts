@@ -28,10 +28,10 @@ async function apiClientCall<T>(
 // --- Song API calls ---
 export const songApi = {
   getAll: async (): Promise<ApiResponse<Song[]>> => {
-    return apiClientCall(axiosInstance.get<Song[]>('/songs'));
+    return apiClientCall(axiosInstance.get<Song[]>('/api/v1/songs'));
   },
   getById: async (id: number): Promise<ApiResponse<Song>> => {
-    return apiClientCall(axiosInstance.get<Song>(`/songs/${id}`));
+    return apiClientCall(axiosInstance.get<Song>(`/api/v1/songs/${id}`));
   },
   search: async (searchTerm: string): Promise<ApiResponse<Song[]>> => {
     return apiClientCall(axiosInstance.get<Song[]>(`/songs/search?term=${encodeURIComponent(searchTerm)}`));
@@ -50,7 +50,7 @@ export const songApi = {
 // --- Album API calls ---
 export const albumApi = {
   getAll: async (): Promise<ApiResponse<Album[]>> => {
-    return apiClientCall(axiosInstance.get<Album[]>('/albums'));
+    return apiClientCall(axiosInstance.get<Album[]>('/api/v1/albums'));
   },
   getById: async (id: number): Promise<ApiResponse<Album>> => {
     return apiClientCall(axiosInstance.get<Album>(`/albums/${id}`));

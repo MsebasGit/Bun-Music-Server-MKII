@@ -14,7 +14,7 @@ import {
 export {
     handleSignUp,
     handleLogin,
-    getUserId,
+    handleGetUserById,
     handleGetSongById,
     handleDeleteUser,
     handleUpdateUser
@@ -22,11 +22,11 @@ export {
 
 async function handleSignUp(req: Request): Promise<Response> {
     try {
-        const body = await req.formData();
-        const user = body.get("user") as string;
-        const pass = body.get("password") as string;
+        const body = await req.json();
+        const user = body.user as string;
+        const pass = body.password as string;
         const hashedPassword = await Bun.password.hash(pass);
-        const email = body.get("email") as string;
+        const email = body.email as string;
 
         if (!user || !hashedPassword || !email) {
             return new Response(JSON.stringify({ message: 'Faltan campos obligatorios' }), { status: 400 });
@@ -96,7 +96,7 @@ async function handleLogin(req: Request): Promise<Response> {
      }
 }
 
-async function getUserId(req: Request): Promise<Response> {
+async function handleGetUserById(req: Request): Promise<Response> {
     const userData = await getUserDataFromCookie(req);
 
     return Response.json({ 

@@ -1,8 +1,6 @@
 @import "tailwindcss";
-
-/* Opcional: Si quieres forzar una fuente específica en toda la app.
-   Pero por defecto Tailwind ya usa sans-serif.
-*/
-:root {
-  font-family: system-ui, -apple-system, sans-serif;
-}
+@plugin 'flowbite/plugin';
+@custom-variant dark (&:where(.dark, .dark *));
+/* ... */
+@source "../node_modules/flowbite-svelte/dist";
+@source "../node_modules/flowbite-svelte-icons/dist";

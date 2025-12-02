@@ -1,11 +1,23 @@
-/** @type {import('tailwindcss').Config} */
-export default {
-  content: ['./index.html', './src/**/*.{svelte,js,ts}'],
+const config = {
+  content: [
+    "./src/**/*.{html,js,svelte,ts}",
+    "./node_modules/flowbite-svelte/**/*.{html,js,svelte,ts}",
+  ],
+
+  plugins: [
+    require('flowbite/plugin')
+  ],
+
+  darkMode: 'class',
+  
   theme: {
-    extend: {},
-  },
-  plugins: [require('daisyui')],
-  daisyui: {
-    themes: ['light', 'dark', 'cupcake', 'bumblebee', 'emerald', 'corporate', 'synthwave', 'retro', 'cyberpunk', 'valentine', 'halloween', 'garden', 'forest', 'aqua', 'lofi', 'pastel', 'fantasy', 'wireframe', 'black', 'luxury', 'dracula', 'cmyk', 'autumn', 'business', 'acid', 'lemonade', 'night', 'coffee', 'winter', 'dim', 'nord', 'sunset'],
-  },
+    extend: {
+      colors: {
+        // flowbite-svelte
+        primary: { 50: '#FFF5F2', 100: '#FFF1EE', 200: '#FFE4DE', 300: '#FFD5CC', 400: '#FFBCAD', 500: '#FE795D', 600: '#EF562F', 700: '#EB4F27', 800: '#CC4522', 900: '#A5371B'},
+      }
+    }
+  }
 };
+
+module.exports = config;

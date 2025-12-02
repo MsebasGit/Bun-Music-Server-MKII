@@ -25,7 +25,7 @@ export const userRoutes = [
   {
     path: '/api/v1/login',
     method: 'POST',
-    handler: handleSignUp,
+    handler: handleLogin,
     protected: false
   },
 
@@ -33,7 +33,7 @@ export const userRoutes = [
   {
     path: '/api/v1/me/id',
     method: 'GET',
-    handler: getUserId,
+    handler: handleGetUserById,
     protected: false
   },
 
