@@ -4,9 +4,9 @@
   import { auth } from "./stores/auth";
 
   // Componentes
-  import Login from "./components/users/Login.svelte";
-  import Register from "./components/users/Register.svelte";
-  import SidebarLayout from "./components/SidebarLayout.svelte";
+  import Login from "./pages/users/Login.svelte";
+  import Register from "./pages/users/Register.svelte";
+  import SidebarLayout from "./layouts/SidebarLayout.svelte";
 
   // Evitar usar `$auth` dentro de callbacks (no está permitido por Svelte).
   // Nos suscribimos explícitamente y guardamos el valor en `isAuth`.

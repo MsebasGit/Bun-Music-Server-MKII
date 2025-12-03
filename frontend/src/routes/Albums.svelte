@@ -1,1 +1,0 @@
-<p>Albums Page</p>

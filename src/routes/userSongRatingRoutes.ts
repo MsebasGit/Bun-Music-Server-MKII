@@ -8,26 +8,12 @@ import {
   handleSearchLikedSongs
 } from '../controller/userSongRatingController';
 
-// Vista HTML de canciones que le gustan al usuario
-const LIKED_SONGS_VIEW_PATH = './static/userSongRatings/likedSongsView.html';
-
 export const userSongRatingRoutes = [
-
-  //          VISTAS HTML
-
-  // Vista de canciones que le gustan al usuario
-  {
-    path: '/api/v1/me/liked-songs',
-    method: 'GET',
-    handler: () => serveHtmlWithSidebar(LIKED_SONGS_VIEW_PATH),
-    protected: true
-  },
-
   //          API REST
             
   // Obtener todas las canciones que le gustan al usuario
   {
-    path: '/api/v1/me/liked-songs/search',
+    path: '/api/v1/me/liked-songs',
     method: 'GET',
     handler: handleGetLikedSongs,
     protected: true

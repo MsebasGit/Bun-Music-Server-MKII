@@ -2,8 +2,11 @@
   import { onDestroy } from 'svelte';
   import { Route, router } from "tinro";
   import { auth } from "../stores/auth";
-  import Home from './Home.svelte';
-  import AllAlbums from './albums/AllAlbums.svelte';
+  import Home from '../pages/Home.svelte';
+  import AllAlbums from '../pages/albums/AllAlbums.svelte';
+  import AllArtists from '../pages/artists/AllArtists.svelte';
+  import AllFavorites from '../pages/userSongRatings/AllFavorites.svelte';
+  import AllPlaylists from '../pages/playlists/AllPlaylists.svelte';
 
   function handleLogout() {
     auth.logout();
@@ -30,9 +33,9 @@
 </script>
 
 <div class="flex h-screen bg-gray-50">
-  <aside class="w-64 bg-white border-r border-gray-200 flex flex-col fixed h-full z-10">
+  <aside class="w-48 bg-white border-r border-gray-200 flex flex-col fixed h-full z-10">
     <div class="h-16 flex items-center px-6 border-b border-gray-200">
-      <span class="text-xl font-bold text-blue-700">Mi App</span>
+      <span class="text-xl font-bold text-blue-700"> Mi App</span>
     </div>
 
     <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
@@ -45,16 +48,31 @@
 
       <a 
         href="/albums" 
-        class="flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors {isActive('/users')}"
+        class="flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors {isActive('/albums')}"
       >
         <span class="truncate">Álbumes</span>
       </a>
 
       <a 
-        href="/settings" 
-        class="flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors {isActive('/settings')}"
+        href="/artists" 
+        class="flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors {isActive('/artists')}"
       >
-        <span class="truncate">Configuración</span>
+        <span class="truncate">Artistas</span>
+      </a>
+      <hr>
+
+      <a 
+        href="/favorites" 
+        class="flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors {isActive('/favorites')}"
+      >
+        <span class="truncate">Favoritos</span>
+      </a>
+
+      <a 
+        href="/playlists" 
+        class="flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors {isActive('/playlists')}"
+      >
+        <span class="truncate">Listas de Reproducción</span>
       </a>
 
     </nav>
@@ -69,7 +87,7 @@
     </div>
   </aside>
 
-  <main class="flex-1 ml-64 p-8 overflow-y-auto h-full">
+  <main class="flex-1 ml-48 p-8 overflow-y-auto h-full">
     <Route path="/">
       <h1 class="text-2xl font-bold mb-4">Panel Principal</h1>
       <div class="p-6 bg-white rounded-lg shadow-sm border border-gray-200">
@@ -78,16 +96,30 @@
     </Route>
 
     <Route path="/albums">
-      <h1 class="text-2xl font-bold mb-4">Gestión de Usuarios</h1>
+      <h1 class="text-2xl font-bold mb-4">Todos los Álbumes</h1>
       <div class="p-6 bg-white rounded-lg shadow-sm border border-gray-200">
         <AllAlbums />
       </div>
     </Route>
 
-    <Route path="/settings">
-      <h1 class="text-2xl font-bold mb-4">Configuración</h1>
+    <Route path="/artists">
+      <h1 class="text-2xl font-bold mb-4">Todos los Artistas</h1>
       <div class="p-6 bg-white rounded-lg shadow-sm border border-gray-200">
-        <p class="text-gray-600">Ajustes de la cuenta.</p>
+        <AllArtists />
+      </div>
+    </Route>
+
+    <Route path="/favorites">
+      <h1 class="text-2xl font-bold mb-4">Canciones Favoritas</h1>
+      <div class="p-6 bg-white rounded-lg shadow-sm border border-gray-200">
+        <AllFavorites />
+      </div>
+    </Route>
+
+    <Route path="/playlists">
+      <h1 class="text-2xl font-bold mb-4">Todas las Listas de Reproducción</h1>
+      <div class="p-6 bg-white rounded-lg shadow-sm border border-gray-200">
+        <AllPlaylists />
       </div>
     </Route>
 

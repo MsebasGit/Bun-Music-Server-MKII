@@ -26,14 +26,6 @@ export const playlistRoutes = [
     protected: true
   },
 
-  // 3. GET Una por ID (JSON) - MANTENER
-  {
-    path: '/api/v1/playlists/:id',
-    method: 'GET',
-    handler: () => serveHtmlWithSidebar(EDIT_PLAYLIST_VIEW_PATH),
-    protected: true
-  },
-
   // 4. EDITAR (JSON) - MANTENER
   {
     path: '/api/v1/playlists/:id',

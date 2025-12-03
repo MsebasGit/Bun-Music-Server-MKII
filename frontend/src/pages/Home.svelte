@@ -37,7 +37,7 @@
             No se encontraron canciones.
         </div>
     {:else}
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {#each songs as song (song.id_song)}
                 <Card href={`/songs/${song.id_song}`} class="p-4 flex flex-col justify-between h-full bg-white dark:bg-gray-800 shadow-md hover:shadow-lg transition-shadow duration-300">
                     <div>

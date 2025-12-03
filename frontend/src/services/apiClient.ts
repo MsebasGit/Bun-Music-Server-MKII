@@ -75,10 +75,10 @@ export const albumApi = {
 // --- Artist API calls ---
 export const artistApi = {
   getAll: async (): Promise<ApiResponse<Artist[]>> => {
-    return apiClientCall(axiosInstance.get<Artist[]>('/artists'));
+    return apiClientCall(axiosInstance.get<Artist[]>('/api/v1/artists'));
   },
   getById: async (id: number): Promise<ApiResponse<Artist>> => {
-    return apiClientCall(axiosInstance.get<Artist>(`/artists/${id}`));
+    return apiClientCall(axiosInstance.get<Artist>(`/api/v1/artists/${id}`));
   },
   search: async (searchTerm: string): Promise<ApiResponse<Artist[]>> => {
     return apiClientCall(axiosInstance.get<Artist[]>(`/artists/search?term=${encodeURIComponent(searchTerm)}`));
@@ -136,8 +136,8 @@ export const commentApi = {
 
 // --- Playlist API calls ---
 export const playlistApi = {
-  getAllByUserId: async (userId: number): Promise<ApiResponse<Playlist[]>> => {
-    return apiClientCall(axiosInstance.get<Playlist[]>(`/playlists/user/${userId}`));
+  getAll: async (): Promise<ApiResponse<Playlist[]>> => {
+    return apiClientCall(axiosInstance.get<Playlist[]>(`/api/v1/playlists`));
   },
   getById: async (id: number): Promise<ApiResponse<Playlist>> => {
     return apiClientCall(axiosInstance.get<Playlist>(`/playlists/${id}`));
@@ -186,8 +186,8 @@ export const socialNetworkApi = {
 
 // --- User Song Rating (Likes) API calls ---
 export const userSongRatingApi = {
-  getLikedSongsByUserId: async (userId: number): Promise<ApiResponse<Song[]>> => {
-    return apiClientCall(axiosInstance.get<Song[]>(`/user-song-ratings/user/${userId}/liked-songs`));
+  getLikedSongsByUser: async (): Promise<ApiResponse<Song[]>> => {
+    return apiClientCall(axiosInstance.get<Song[]>(`/api/v1/me/liked-songs`));
   },
   isSongLikedByUser: async (userId: number, songId: number): Promise<ApiResponse<LikeStatus>> => {
     return apiClientCall(axiosInstance.get<LikeStatus>(`/user-song-ratings/user/${userId}/song/${songId}/is-liked`));

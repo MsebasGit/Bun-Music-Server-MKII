@@ -1,19 +1,19 @@
 <script lang="ts">
     import { onMount } from 'svelte';
     import { Card, Spinner } from "flowbite-svelte";
-    import { albumApi } from '../../services/apiClient';
-    import type { Album } from '../../types/api';
+    import { playlistApi } from '../../services/apiClient';
+    import type { Playlist } from '../../types/api';
 
-    let albums: Album[] = [];
+    let playlists: Playlist[] = [];
     let loading: boolean = true;
     let error: string | null = null;
 
     onMount(async () => {
-        const result = await albumApi.getAll();
+        const result = await playlistApi.getAll();
         if (result.success) {
-            albums = result.data || [];
+            playlists = result.data || [];
         } else {
-            error = result.error || 'Failed to fetch albums';
+            error = result.error || 'Failed to fetch playlists';
         }
         loading = false;
     });
@@ -32,25 +32,20 @@
             <p>Error: {error}</p>
             <p>No se pudieron cargar los álbumes.</p>
         </div>
-    {:else if albums.length === 0}
+    {:else if playlists.length === 0}
         <div class="text-gray-500 dark:text-gray-400 text-center text-lg">
             No se encontraron álbumes.
         </div>
     {:else}
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {#each albums as album (album.id_album)}
-                <Card href={`/albums/${album.id_album}`} class="p-4 flex flex-col justify-between h-full bg-white dark:bg-gray-800 shadow-md hover:shadow-lg transition-shadow duration-300">
+            {#each playlists as playlist (playlist.id_playlist)}
+                <Card href={`/playlists/${playlist.id_playlist}`} class="p-4 flex flex-col justify-between h-full bg-white dark:bg-gray-800 shadow-md hover:shadow-lg transition-shadow duration-300">
                     <div>
                         <h5 class="mb-2 text-xl font-bold tracking-tight text-gray-900 dark:text-white truncate">
-                            {album.name}
+                            {playlist.name}
                         </h5>
-                        <img
-                            src={album.cover_path || '/default-cover.png'}
-                            alt="Cover de {album.name}"
-                            class="w-full h-48 object-cover mb-4 rounded-md"
-                        />
                         <p class="font-normal text-gray-700 dark:text-gray-400 text-sm">
-                            Artista: {album.artist_name || 'Desconocido'}
+                            Descripción: {playlist.description}
                         </p>
                     </div>
                 </Card>
