@@ -7,6 +7,7 @@
   import Login from "./pages/users/Login.svelte";
   import Register from "./pages/users/Register.svelte";
   import SidebarLayout from "./layouts/SidebarLayout.svelte";
+  import SongView from './pages/songs/SongView.svelte';
 
   // Evitar usar `$auth` dentro de callbacks (no está permitido por Svelte).
   // Nos suscribimos explícitamente y guardamos el valor en `isAuth`.

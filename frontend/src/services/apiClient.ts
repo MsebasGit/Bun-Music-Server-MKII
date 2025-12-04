@@ -52,6 +52,9 @@ export const albumApi = {
   getAll: async (): Promise<ApiResponse<Album[]>> => {
     return apiClientCall(axiosInstance.get<Album[]>('/api/v1/albums'));
   },
+  getSongs: async (albumId: number): Promise<ApiResponse<Song[]>> => {
+    return apiClientCall(axiosInstance.get<Song[]>(`/api/v1/albums/${albumId}/songs`));
+  },
   getById: async (id: number): Promise<ApiResponse<Album>> => {
     return apiClientCall(axiosInstance.get<Album>(`/albums/${id}`));
   },
@@ -76,6 +79,9 @@ export const albumApi = {
 export const artistApi = {
   getAll: async (): Promise<ApiResponse<Artist[]>> => {
     return apiClientCall(axiosInstance.get<Artist[]>('/api/v1/artists'));
+  },
+  getSongs: async (artistId: number): Promise<ApiResponse<Song[]>> => {
+    return apiClientCall(axiosInstance.get<Song[]>(`/api/v1/artists/${artistId}/songs`));
   },
   getById: async (id: number): Promise<ApiResponse<Artist>> => {
     return apiClientCall(axiosInstance.get<Artist>(`/api/v1/artists/${id}`));
@@ -118,10 +124,10 @@ export const userApi = {
 // --- Comment API calls ---
 export const commentApi = {
   getBySongId: async (songId: number): Promise<ApiResponse<Comment[]>> => {
-    return apiClientCall(axiosInstance.get<Comment[]>(`/comments/song/${songId}`));
+    return apiClientCall(axiosInstance.get<Comment[]>(`/api/v1/songs/${songId}/comments`));
   },
   getById: async (id: number): Promise<ApiResponse<Comment>> => {
-    return apiClientCall(axiosInstance.get<Comment>(`/comments/${id}`));
+    return apiClientCall(axiosInstance.get<Comment>(`/api/v1/comments/${id}`));
   },
   create: async (newComment: Omit<Comment, 'id_comment' | 'creation_date' | 'modification_date' | 'username'>): Promise<ApiResponse<Comment>> => {
     return apiClientCall(axiosInstance.post<Comment>('/comments', newComment));
@@ -152,7 +158,7 @@ export const playlistApi = {
     return apiClientCall(axiosInstance.delete<void>(`/playlists/${id}`));
   },
   getSongs: async (playlistId: number): Promise<ApiResponse<Song[]>> => {
-    return apiClientCall(axiosInstance.get<Song[]>(`/playlists/${playlistId}/songs`));
+    return apiClientCall(axiosInstance.get<Song[]>(`/api/v1/playlists/${playlistId}/songs`));
   },
   addSong: async (playlistId: number, songId: number): Promise<ApiResponse<void>> => {
     return apiClientCall(axiosInstance.post<void>(`/playlists/${playlistId}/songs`, { id_song: songId }));
@@ -161,7 +167,7 @@ export const playlistApi = {
     return apiClientCall(axiosInstance.delete<void>(`/playlists/${playlistId}/songs/${songId}`));
   },
   getPlaylistsWhereSongNotExist: async (songId: number, userId: number): Promise<ApiResponse<Playlist[]>> => {
-    return apiClientCall(axiosInstance.get<Playlist[]>(`/playlists/song-not-exist/${songId}/user/${userId}`));
+    return apiClientCall(axiosInstance.get<Playlist[]>(`/api/v1/playlists/song-not-exist/${songId}/user/${userId}`));
   },
 };
 
@@ -193,7 +199,7 @@ export const userSongRatingApi = {
     return apiClientCall(axiosInstance.get<LikeStatus>(`/user-song-ratings/user/${userId}/song/${songId}/is-liked`));
   },
   countLikesInSong: async (songId: number): Promise<ApiResponse<LikeCount>> => {
-    return apiClientCall(axiosInstance.get<LikeCount>(`/user-song-ratings/song/${songId}/likes-count`));
+    return apiClientCall(axiosInstance.get<LikeCount>(`/api/v1/songs/${songId}/likes-count`));
   },
   likeSong: async (userId: number, songId: number): Promise<ApiResponse<void>> => {
     return apiClientCall(axiosInstance.post<void>(`/user-song-ratings/like`, { id_user: userId, id_song: songId }));
