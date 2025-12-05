@@ -1,6 +1,6 @@
 <script lang="ts">
     import { onMount } from "svelte";
-    import { Spinner } from "flowbite-svelte";
+    import { Spinner, Heading } from "flowbite-svelte";
     import { artistApi } from "../../services/apiClient";
     import type { Song } from "../../types/api";
     import SongGrid from "../../components/SongGrid.svelte";
@@ -22,9 +22,9 @@
 </script>
 
 <div class="container mx-auto p-4">
-    <h1 class="text-3xl font-bold mb-6 text-gray-900 dark:text-white">
+    <Heading tag="h1" class="text-3xl font-bold mb-6 text-gray-900 dark:text-white">
         Canciones del Artista
-    </h1>
+    </Heading>
 
     {#if loading}
         <div class="flex justify-center items-center h-40">

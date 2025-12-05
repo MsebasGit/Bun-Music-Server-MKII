@@ -1,5 +1,6 @@
 <script lang="ts">
   import { userApi } from "../../services/apiClient";
+  import { Heading } from "flowbite-svelte";
   import { router } from "tinro";
 
   let user = '';
@@ -32,7 +33,7 @@
 <div class="flex flex-col items-center justify-center min-h-screen bg-white px-4">
   <div class="w-full max-w-sm">
     
-    <h2 class="text-2xl font-bold text-gray-900 mb-6 text-center">Crear Cuenta</h2>
+    <Heading tag="h2" class="text-2xl font-bold text-gray-900 mb-6 text-center">Crear Cuenta</Heading>
 
     <form on:submit|preventDefault={handleSignup} class="max-w-sm mx-auto">
       

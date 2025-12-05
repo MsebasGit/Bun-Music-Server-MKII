@@ -1,91 +1,77 @@
 <script lang="ts">
-  import { onDestroy } from 'svelte';
+  import {
+    Sidebar,
+    SidebarGroup,
+    SidebarItem,
+    SidebarBrand,
+  } from "flowbite-svelte";
+  import {
+    HomeSolid,
+    MusicSolid,
+    MicrophoneSolid,
+    HeartSolid,
+    BookmarkSolid,
+    PlusOutline,
+    HeadphonesSolid
+  } from "flowbite-svelte-icons";
   import { router } from "tinro";
-  import { auth } from "../stores/auth";
 
-  function handleLogout() {
-    auth.logout();
-    router.goto('/login');
-    try {
-      location.replace('/login');
-    } catch (e) {
-      // no-op in non-browser envs
-    }
-  }
-
-  // Active link styling logic
-  let currentPath = window.location.pathname;
-  const unsubscribe = router.subscribe(r => currentPath = r.path);
-  onDestroy(() => unsubscribe());
-
-  function isActive(path: string) {
-    // Make Home active only on exact match
-    if (path === '/') {
-        return currentPath === '/' ? "bg-gray-100 text-blue-700" : "text-gray-900 hover:bg-gray-100";
-    }
-    // For other paths, check if the current path starts with it
-    return currentPath.startsWith(path) ? "bg-gray-100 text-blue-700" : "text-gray-900 hover:bg-gray-100";
-  }
+  // Clase común para los iconos
+  const iconClass = "w-5 h-5 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white";
 </script>
 
-<aside class="w-48 bg-white border-r border-gray-200 flex flex-col fixed h-full z-10">
-  <div class="h-16 flex items-center px-6 border-b border-gray-200">
-    <span class="text-xl font-bold text-blue-700">Mi App</span>
-  </div>
+<Sidebar activeUrl={$router.path} class="z-50 h-full">
+  
+  <SidebarBrand href="/" class="mb-6">
+    <img
+      src="https://flowbite.com/docs/images/logo.svg"
+      class="h-6 me-3 sm:h-7"
+      alt="Flowbite Logo"
+    />
+    <span class="self-center text-xl font-semibold">Flowbite</span>
+  </SidebarBrand>
 
-  <nav class="flex-1 px-3 py-4 space-y-4 overflow-y-auto">
-    <div>
-      <h3 class="text-xs font-semibold text-gray-500 uppercase px-3 mb-1">Explorar</h3>
-      <div class="space-y-1">
-        <a 
-          href="/" 
-          class="flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors {isActive('/')}"
-        >
-          <span class="truncate">Home</span>
-        </a>
+  <SidebarGroup>
+    
+    <SidebarItem label="Panel Principal" href="/">
+      {#snippet icon()}
+        <HomeSolid class={iconClass} />
+      {/snippet}
+    </SidebarItem>
 
-        <a 
-          href="/albums" 
-          class="flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors {isActive('/albums')}"
-        >
-          <span class="truncate">Álbumes</span>
-        </a>
+    <SidebarItem label="Álbumes" href="/albums">
+      {#snippet icon()}
+        <MusicSolid class={iconClass} />
+      {/snippet}
+    </SidebarItem>
 
-        <a 
-          href="/artists" 
-          class="flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors {isActive('/artists')}"
-        >
-          <span class="truncate">Artistas</span>
-        </a>
-      </div>
-    </div>
+    <SidebarItem label="Artistas" href="/artists">
+      {#snippet icon()}
+        <MicrophoneSolid class={iconClass} />
+      {/snippet}
+    </SidebarItem>
+  </SidebarGroup>
+  <SidebarGroup border>
+    <SidebarItem label="Me gusta" href="/favorites">
+      {#snippet icon()}
+        <HeartSolid class={iconClass} />
+      {/snippet}
+    </SidebarItem>
 
-    <div>
-      <h3 class="text-xs font-semibold text-gray-500 uppercase px-3 mb-1">Tu Librería</h3>
-      <div class="space-y-1">
-        <a 
-          href="/favorites" 
-          class="flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors {isActive('/favorites')}"
-        >
-          <span class="truncate">Favoritos</span>
-        </a>
+    <SidebarItem label="Playlists" href="/playlists">
+      {#snippet icon()}
+        <BookmarkSolid class={iconClass} />
+      {/snippet}
+    </SidebarItem>
 
-        <a 
-          href="/playlists" 
-          class="flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors {isActive('/playlists')}"
-        >
-          <span class="truncate">Listas de Reproducción</span>
-        </a>
-      </div>
-    </div>
-  </nav>
+  </SidebarGroup>
 
-  <div class="p-4 border-t border-gray-200">
-    <button
-      on:click={handleLogout}
-      class="flex w-full items-center px-3 py-2 text-sm font-medium text-red-600 rounded-md hover:bg-red-50 transition-colors"
-    >
-      <span class="truncate">Cerrar Sesión</span>
-    </button>
-  </div>
-</aside>
+  <SidebarGroup border>
+    <SidebarItem label="Studio" href="/studio">
+      {#snippet icon()}
+        <HeadphonesSolid class={iconClass} />
+      {/snippet}
+    </SidebarItem>
+
+  </SidebarGroup>
+</Sidebar>

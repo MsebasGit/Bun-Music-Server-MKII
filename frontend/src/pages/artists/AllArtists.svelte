@@ -1,6 +1,6 @@
 <script lang="ts">
     import { onMount } from 'svelte';
-    import { Spinner } from "flowbite-svelte";
+    import { Heading, Spinner } from "flowbite-svelte";
     import { artistApi } from '../../services/apiClient';
     import type { Artist } from '../../types/api';
     import ArtistGrid from '../../components/ArtistGrid.svelte';
@@ -21,8 +21,11 @@
 </script>
 
 <div class="container mx-auto p-4">
-    <!-- Title is managed by SidebarLayout -->
-
+    <!-- Title is managed here -->
+    <Heading tag="h1" class="text-3xl font-bold mb-6 text-gray-900 dark:text-white">
+        Todos los Artistas
+    </Heading>
+    
     {#if loading}
         <div class="flex justify-center items-center h-40">
             <Spinner color="blue" size="8" />

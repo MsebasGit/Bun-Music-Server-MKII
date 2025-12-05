@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { navigate } from "svelte-routing";
+  import { router } from "tinro";
   import { auth } from "../stores/auth";
 
   // IMPORTANTE: Empezamos en false.
@@ -16,7 +16,7 @@
       // Si NO está logueado, redirigimos.
       // Como renderContent sigue en false, el slot NUNCA se intenta montar,
       // evitando el error "before is undefined".
-      navigate("/login", { replace: true });
+      router.goto("/login", true);
     }
   });
 
@@ -25,7 +25,7 @@
       renderContent = false; // Cerramos la compuerta inmediatamente
       // Usamos setTimeout para que la redirección no choque con el desmontaje del DOM
       setTimeout(() => {
-          navigate("/login", { replace: true });
+          router.goto("/login", true);
       }, 0);
   }
 </script>

@@ -1,4 +1,5 @@
 <script lang="ts">
+  // @ts-nocheck
   import { onDestroy } from 'svelte';
   import { Route, router } from "tinro";
   import { auth } from "./stores/auth";
