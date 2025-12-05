@@ -1,5 +1,6 @@
 <script lang="ts">
   import { userApi } from "../../services/apiClient"; 
+  import { Heading } from "flowbite-svelte";
   import { router } from "tinro"; // 1. Importamos router de Tinro
   import { auth } from "../../stores/auth"; 
 
@@ -34,9 +35,9 @@
 
 <div class="flex flex-col items-center justify-center min-h-screen bg-white px-4">
   <div class="w-full max-w-sm">
-    <h2 class="text-2xl font-bold text-gray-900 mb-6 text-center">
+    <Heading tag="h2" class="text-2xl font-bold text-gray-900 mb-6 text-center">
       Iniciar Sesión
-    </h2>
+    </Heading>
 
     <form on:submit|preventDefault={handleLogin} class="max-w-sm mx-auto">
       <div class="mb-5">
