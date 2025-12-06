@@ -12,9 +12,18 @@
     HeartSolid,
     BookmarkSolid,
     PlusOutline,
-    HeadphonesSolid
+    HeadphonesSolid,
+    UserCircleSolid
   } from "flowbite-svelte-icons";
   import { router } from "tinro";
+  import { auth } from "../stores/auth";
+  import { get } from 'svelte/store';
+
+  let isLoggedIn = get(auth);
+
+  auth.subscribe(value => {
+    isLoggedIn = value;
+  });
 
   // Clase común para los iconos
   const iconClass = "w-5 h-5 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white";
@@ -73,5 +82,26 @@
       {/snippet}
     </SidebarItem>
 
+  </SidebarGroup>
+
+  <SidebarGroup border>
+    {#if isLoggedIn}
+      <SidebarItem label="Cerrar Sesión" on:click={() => { auth.logout(); router.goto('/') }}>
+        {#snippet icon()}
+          <UserCircleSolid class={iconClass} />
+        {/snippet}
+      </SidebarItem>
+    {:else}
+      <SidebarItem label="Iniciar Sesión" href="/users/login">
+        {#snippet icon()}
+          <UserCircleSolid class={iconClass} />
+        {/snippet}
+      </SidebarItem>
+      <SidebarItem label="Registrarse" href="/users/register">
+        {#snippet icon()}
+          <PlusOutline class={iconClass} />
+        {/snippet}
+      </SidebarItem>
+    {/if}
   </SidebarGroup>
 </Sidebar>
