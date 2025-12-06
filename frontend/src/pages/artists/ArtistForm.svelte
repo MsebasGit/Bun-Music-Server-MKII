@@ -1,6 +1,9 @@
 <script lang="ts">
   import { userApi } from "../../services/apiClient";
+  import type { User } from "../../types/api";
   import { router } from "tinro";
+  import { onMount } from "svelte";
+
   // Importamos Checkbox, Card y Spinner además de los básicos
   import { 
     Heading, 
@@ -8,44 +11,39 @@
     Input, 
     Button, 
     Card, 
-    Checkbox, 
     Alert, 
     Spinner,
     DarkMode 
   } from "flowbite-svelte";
 
-  let user = "";
-  let email = "";
-  let password = "";
-
-  let isLoading = false;
-  let errorMessage = "";
+  let user: User | null = null;
+  let loading: boolean = true;
+  let error: string | null = null;
 
   async function handleSignup() {
-    isLoading = true;
-    errorMessage = "";
-
-    try {
-      const response = await userApi.signup(user, email, password);
-      if (response.success) {
-        router.goto("/login");
-      } else {
-        errorMessage = response.error || "Error al registrarse";
-      }
-    } catch (error: any) {
-      errorMessage = "Error de red o desconocido";
-    } finally {
-      isLoading = false;
-    }
+    
   }
+
+  onMount(async () => {
+        const result = await userApi.getMe();
+        if (result.success && result.data) {
+            user = result.data;
+        } else {
+            error = result.error || "Failed to fetch songs";
+        }
+        loading = false;
+    });
 </script>
 
 <div class="flex flex-col items-center justify-center h-screen bg-gray-50 dark:bg-gray-900 px-4">
   
   <Card class="w-full max-w-md p-6 space-y-6 sm:p-8">
     
+    <Heading tag="h1" class="text-2xl font-bold text-gray-900 dark:text-white text-center">
+      ¡Conviértase en artista!
+    </Heading>
     <Heading tag="h2" class="text-2xl font-bold text-gray-900 dark:text-white text-center">
-      Crear Cuenta
+      Llene el siguiente formulario para crear su cuenta de artista
     </Heading>
 
     <form on:submit|preventDefault={handleSignup} class="mt-8 space-y-6">

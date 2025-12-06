@@ -1,15 +1,16 @@
 <script lang="ts">
     import { onMount } from "svelte";
-    import { Card, Spinner, Heading } from "flowbite-svelte";
+    import { Card, Spinner, Heading, Button, Popover } from "flowbite-svelte";
     import { playlistApi } from "../../services/apiClient";
     import type { Playlist } from "../../types/api";
+    import NewPlaylist from "./newPlaylist.svelte";
 
     let playlists: Playlist[] = [];
     let loading: boolean = true;
     let error: string | null = null;
 
     onMount(async () => {
-        const result = await playlistApi.getAll();
+        const result = await playlistApi.getMe();
         if (result.success) {
             playlists = result.data || [];
         } else {
@@ -21,8 +22,16 @@
 
 <div class="container mx-auto p-4">
     <Heading tag="h1" class="text-3xl font-bold mb-6 text-gray-900 dark:text-white">
-        Tus las Playlists
+        Tus Playlists
     </Heading>
+
+    
+    <Button slot="trigger" class="mb-4" outline color="blue">
+        Crear Nueva Playlist
+    </Button>
+    <Popover trigger="click" class="w-56 text-sm">
+        <NewPlaylist />
+    </Popover>
 
     {#if loading}
         <div class="flex justify-center items-center h-40">
