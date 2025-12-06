@@ -26,4 +26,4 @@ Existe una aplicación frontend complementaria, construida con Svelte, diseñada
 -   Puente Herendia Alain Puente
 
 ## Lista de Tareas
-[Tablero de Trello](https://trello.com/invite/b/69275f5cb172437e8db648/ATTIdef8b8c47c6a7bf2c84b6fd57262e06e61E700F8/bun-music-server-mkii)
+[Tablero de Trello](https://trello.com/invite/b/69275f5b5cb172437e8db648/ATTI489d1ed5d35d80f9868ed7a79e373ce35DC85CCC/bun-music-server-mkii)
