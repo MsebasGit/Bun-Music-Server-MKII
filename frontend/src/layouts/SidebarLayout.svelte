@@ -22,6 +22,7 @@
   import SongsInAlbum from "../pages/albums/SongsInAlbum.svelte";
   import SongsInArtist from "../pages/artists/SongsInArtist.svelte";
     import Admin from "../pages/studio/Admin.svelte";
+    import Login from "../pages/users/Login.svelte";
 
 </script>
 
@@ -64,6 +65,9 @@
       <Admin />
     </Route>
 
+    <Route path="/login">
+      <Login />
+    </Route>
 
     <Route fallback>
       <div class="text-center mt-10 p-6">

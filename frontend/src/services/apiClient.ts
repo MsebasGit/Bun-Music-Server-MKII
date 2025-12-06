@@ -105,11 +105,11 @@ export const userApi = {
   getById: async (id: number): Promise<ApiResponse<User>> => {
     return apiClientCall(axiosInstance.get<User>(`/users/${id}`));
   },
-  login: async (user: string, password: string): Promise<ApiResponse<{ message: string }>> => {
-    return apiClientCall(axiosInstance.post('/api/v1/login', { user, password }));
+  login: async (email: string, password: string): Promise<ApiResponse<{ message: string }>> => {
+    return apiClientCall(axiosInstance.post('/api/v1/auth/login', { email, password }));
   },
-  signup: async (user: string, email: string, password: string): Promise<ApiResponse<{ message: string }>> => {
-    return apiClientCall(axiosInstance.post('/api/v1/signup', { user, email, password }));
+  signup: async (name: string, email: string, password: string): Promise<ApiResponse<{ message: string }>> => {
+    return apiClientCall(axiosInstance.post('/api/v1/auth/register', { name, email, password }));
   },
   // Note: For login/signup, you'd typically have specific endpoints and handle credentials carefully.
   // This example focuses on data retrieval/management after authentication.
