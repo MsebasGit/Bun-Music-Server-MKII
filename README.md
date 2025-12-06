@@ -1,40 +1,29 @@
-# dbiiproy
+# Music Server API con Bun, Elysia y Drizzle
 
-## Proyecto:
-### (Base) Sistema de streaming músical, escrito en Bun (con TypeScript) y SQLite con las siguientes caracteristicas:
-   - Incluye login
-   - Permite tener usuarios con rol de invitados y artistas
-   - Incluye procesos CRUD para canciones, álbumes y playlists (usuario con rol de artista)
-   - Permite interactuar mediante "Me gusta" y comentarios (todos los usuarios)
-   - Permite escuchar las canciones
-### (Añadido) Mejora y correcciones del primer sistema musical con ayuda de un framework frontend
-   - Correciones en el backend
-   - Uso la librería Halogen/PureScript para mejorar y corregir el frontend
-     - Simplificar lógica
-     - Creación de componentes
+## Descripción del Proyecto
+Este es un sistema de backend para un servidor de streaming de música, construido con **Bun**, el framework web **Elysia.js** y **Drizzle ORM** para la gestión de la base de datos **SQLite**.
 
-## Objetivo
-Mejorar el primer sistema con mejores prácticas en el Backend, añadiendo más funcionalidades y utilizando Halogen para reconstruir totalmente el frontend
+El proyecto actualmente soporta:
+-   Autenticación de usuarios (registro e inicio de sesión) utilizando emails y JWTs.
+-   Gestión de usuarios con roles (invitados y artistas).
+-   Operaciones CRUD para canciones, álbumes y playlists (para usuarios con rol de artista).
+-   Interacciones de usuario como "Me gusta" y comentarios.
+-   Funcionalidades para el streaming de canciones.
 
-## Lista de tareas:
-(Trello) https://trello.com/invite/b/69275f5b5cb172437e8db648/ATTIdef8b8c47c6a7bf2c84b6fd57262e06e61E700F8/bun-music-server-mkii
+## Frontend (Svelte)
+Existe una aplicación frontend complementaria, construida con Svelte, diseñada para interactuar con esta API.
 
-## Integrantes:
-  - Medrano Chacolla Sebastian Jorge
-  - Torrez Flores Nicole Fabiana
-  - Puente Herendia Alain Puente
-  
-  
-To install dependencies:
+## Tecnologías Utilizadas
+-   **Runtime**: [Bun](https://bun.sh)
+-   **Web Framework**: [Elysia.js](https://elysiajs.com/)
+-   **Base de Datos**: SQLite
+-   **ORM**: [Drizzle ORM](https://orm.drizzle.team/)
+-   **Autenticación**: JWT, Bun.password
 
-```bash
-bun install
-```
+## Integrantes
+-   Medrano Chacolla Sebastian Jorge
+-   Torrez Flores Nicole Fabiana
+-   Puente Herendia Alain Puente
 
-To run:
-
-```bash
-bun run index.ts
-```
-
-This project was created using `bun init` in bun v1.2.4. [Bun](https://bun.sh) is a fast all-in-one JavaScript runtime.
+## Lista de Tareas
+[Tablero de Trello](https://trello.com/invite/b/69275f5cb172437e8db648/ATTIdef8b8c47c6a7bf2c84b6fd57262e06e61E700F8/bun-music-server-mkii)
