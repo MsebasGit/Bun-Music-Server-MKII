@@ -86,7 +86,7 @@
 
   <SidebarGroup border>
     {#if isLoggedIn}
-      <SidebarItem label="Cerrar Sesión" on:click={() => { auth.logout(); router.goto('/') }}>
+      <SidebarItem label="Cerrar Sesión" on:click={() => { auth.logout(); }}>
         {#snippet icon()}
           <UserCircleSolid class={iconClass} />
         {/snippet}
