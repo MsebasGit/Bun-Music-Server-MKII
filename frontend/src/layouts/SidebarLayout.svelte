@@ -9,7 +9,6 @@
 
   // Page Views
   import Home from "../pages/Home.svelte";
-  import SongView from "../pages/songs/SongView.svelte";
 
   // General Pages
   import AllAlbums from "../pages/albums/AllAlbums.svelte";
@@ -21,8 +20,8 @@
   import SongsInPlaylist from "../pages/playlists/SongsInPlaylist.svelte";
   import SongsInAlbum from "../pages/albums/SongsInAlbum.svelte";
   import SongsInArtist from "../pages/artists/SongsInArtist.svelte";
-    import Admin from "../pages/studio/Admin.svelte";
-    import Login from "../pages/users/Login.svelte";
+  import Admin from "../pages/studio/Admin.svelte";
+  import Login from "../pages/users/Login.svelte";
 
 </script>
 
@@ -34,8 +33,6 @@
       <Home />
     </Route>
 
-    <Route path="/songs/:id" let:params><SongView id={params.id} /></Route>
-
     <Route path="/albums">
       <AllAlbums />
     </Route>
@@ -46,7 +43,8 @@
       <AllArtists />
     </Route>
 
-    <Route path="/artists/:id" let:params><SongsInArtist id={params.id} /></Route
+    <Route path="/artists/:id" let:params
+      ><SongsInArtist id={params.id} /></Route
     >
 
     <Route path="/favorites">

@@ -51,12 +51,12 @@ export interface Comment {
 }
 
 export interface Playlist {
-  id_playlist: number;
+  id: number;
   name: string;
   description: string;
-  modification_date: string;
-  creation_date: string;
-  id_user: number;
+  modificationDate: string;
+  creationDate: string;
+  userId: number;
 }
 
 export interface SocialNetwork {

@@ -18,6 +18,8 @@ axiosInstance.interceptors.request.use(
     // 1. Intentamos obtener el token del localStorage
     const token = localStorage.getItem('jwt_token');
     
+    console.log("Adding Authorization header with token:", token);
+
     // 2. Si existe el token, lo añadimos a la cabecera 'Authorization'
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -38,7 +40,13 @@ async function apiClientCall<T>(
 ): Promise<ApiResponse<T>> {
   try {
     const response = await request;
-    return { success: true, data: response.data };
+    // Check if the response.data itself has a 'data' property (common for API wrappers)
+    // If so, use that nested 'data' property as the actual payload.
+    const actualData = (response.data && typeof response.data === 'object' && 'data' in response.data)
+        ? (response.data as any).data
+        : response.data;
+
+    return { success: true, data: actualData as T };
   } catch (error: any) {
     console.error(`API call failed:`, error.response?.data || error.message);
     const errorMessage = error.response?.data?.message || error.message || 'An unknown error occurred';
@@ -94,11 +102,11 @@ export const playlistApi = {
   getById: async (id: number): Promise<ApiResponse<Playlist>> => {
     return apiClientCall(axiosInstance.get<Playlist>(`/playlists/${id}`));
   },
-  update: async (id: number, updatedPlaylist: Omit<Playlist, 'id_playlist' | 'creation_date' | 'modification_date' | 'id_user'>): Promise<ApiResponse<void>> => {
-    return apiClientCall(axiosInstance.put<void>(`/playlists/${id}`, updatedPlaylist));
+  update: async (id: number, updatedPlaylist: Omit<Playlist, 'id' | 'creationDate' | 'modificationDate' | 'userId'>): Promise<ApiResponse<void>> => {
+    return apiClientCall(axiosInstance.put<void>(`/api/v1/playlists/${id}`, updatedPlaylist));
   },
   delete: async (id: number): Promise<ApiResponse<void>> => {
-    return apiClientCall(axiosInstance.delete<void>(`/playlists/${id}`));
+    return apiClientCall(axiosInstance.delete<void>(`/api/v1/playlists/${id}`));
   },
   getSongs: async (playlistId: number): Promise<ApiResponse<Song[]>> => {
     return apiClientCall(axiosInstance.get<Song[]>(`/api/v1/playlists/${playlistId}/songs`));

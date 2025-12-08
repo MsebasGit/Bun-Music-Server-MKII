@@ -5,6 +5,8 @@ import type { Song } from '../types/api';
  * Interface for the state of our global player.
  */
 interface PlayerState {
+  playlist: Song[];
+  currentSongIndex: number;
   currentSong: Song | null;
   isPlaying: boolean;
   currentTime: number;
@@ -13,6 +15,8 @@ interface PlayerState {
 }
 
 const initialPlayerState: PlayerState = {
+  playlist: [],
+  currentSongIndex: -1,
   currentSong: null,
   isPlaying: false,
   currentTime: 0,
@@ -31,21 +35,67 @@ export const playerStore = {
   update,
 
   /**
-   * Plays a new song or toggles play/pause for the current song.
-   * @param song - The song to play. If null, toggles the current song.
+   * Plays a song from a playlist context.
+   * @param song - The song object to play.
+   * @param playlist - The array of songs that provides the context for next/previous.
    */
-  playSong: (song: Song) => {
+  playSong: (song: Song, playlist: Song[]) => {
     update(state => {
+      const songIndex = playlist.findIndex(s => s.id_song === song.id_song);
+
       // If it's the same song, just toggle play/pause
       if (state.currentSong?.id_song === song.id_song) {
         return { ...state, isPlaying: !state.isPlaying };
       }
-      // If it's a new song, start playing it from the beginning
-      return { 
-        ...state, 
-        currentSong: song, 
-        isPlaying: true, 
-        currentTime: 0 
+
+      // It's a new song or a new context
+      return {
+        ...state,
+        playlist,
+        currentSongIndex: songIndex,
+        currentSong: song,
+        isPlaying: true,
+        currentTime: 0,
+      };
+    });
+  },
+
+  /**
+   * Plays the next song in the current playlist.
+   */
+  playNext: () => {
+    update(state => {
+      const nextIndex = state.currentSongIndex + 1;
+      if (nextIndex >= state.playlist.length) {
+        // End of playlist, stop playing
+        return { ...state, isPlaying: false };
+      }
+      return {
+        ...state,
+        currentSongIndex: nextIndex,
+        currentSong: state.playlist[nextIndex],
+        currentTime: 0,
+        isPlaying: true,
+      };
+    });
+  },
+
+  /**
+   * Plays the previous song in the current playlist.
+   */
+  playPrevious: () => {
+    update(state => {
+      const prevIndex = state.currentSongIndex - 1;
+      if (prevIndex < 0) {
+        // Before the start of the playlist, do nothing or stop
+        return state;
+      }
+      return {
+        ...state,
+        currentSongIndex: prevIndex,
+        currentSong: state.playlist[prevIndex],
+        currentTime: 0,
+        isPlaying: true,
       };
     });
   },
@@ -85,3 +135,4 @@ export const playerStore = {
     update(state => ({ ...state, volume: newVolume }));
   },
 };
+

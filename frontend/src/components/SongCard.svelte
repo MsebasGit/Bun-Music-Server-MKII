@@ -8,6 +8,7 @@
 
     export let song: Song;
     export let playlists: Playlist[];
+    export let playlistContext: Song[] = [];
 
     // --- ESTADO LOCAL Y STORES ---
     let currentPlayingId: number | null = null;
@@ -23,7 +24,7 @@
     // --- MANEJADORES DE ACCIONES ---
     function handlePlay(e: MouseEvent) {
         e.stopPropagation();
-        playerStore.playSong(song);
+        playerStore.playSong(song, playlistContext);
     }
 
     async function handleLike(e: MouseEvent) {

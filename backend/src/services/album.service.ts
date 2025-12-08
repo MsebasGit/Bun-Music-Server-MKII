@@ -1,12 +1,10 @@
-// src/services/album.service.ts
 import { db } from "../db"; 
-import { albums, type NewAlbum } from "../db/schema"; 
-import { handleFileUpload } from '../utilities/fileUtils'; // <--- NUEVO IMPORT
-// import { eq } from "drizzle-orm"; // Descomentar si usas otras funciones de Drizzle
+import { albums, artists, type NewAlbum } from "../db/schema"; 
+import { handleFileUpload } from '../utilities/fileUtils';
+import { eq, like, or, desc } from "drizzle-orm"; 
+import { handleDrizzleResult, handleDeleteResult } from "../utilities/validationUtils";
 
-// ----------------------------------------------------
-// TIPO: Adaptado para la estructura de la petición multipart
-// ----------------------------------------------------
+// (El tipo ElysiaContext se mantiene igual)
 type ElysiaContext = { 
     params?: { id: string | number }; 
     body: {
@@ -19,24 +17,14 @@ type ElysiaContext = {
     [key: string]: any 
 };
 
-
-// ----------------------------------------------------
-// 1. CREAR ÁLBUM (POST /albums) - Lógica de subida integrada
-// ----------------------------------------------------
+// 1. CREAR ÁLBUM
 export const createAlbum = async (body: ElysiaContext) => {
-    // 1. CORRECCIÓN PRINCIPAL: Desestructurar context.body para obtener los datos
     const { name, release_date, id_artist, cover_image } = body;
-
-    // --- Lógica de Subida de Archivo ---
     const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp'];
     const DESTINATION_DIR = '/img/album_covers'; 
 
     try {
-        const coverPath = await handleFileUpload(
-            cover_image,
-            ALLOWED_EXTENSIONS,
-            DESTINATION_DIR
-        );
+        const coverPath = await handleFileUpload(cover_image, ALLOWED_EXTENSIONS, DESTINATION_DIR);
         const albumData: NewAlbum = { 
             name,
             releaseDate: release_date,
@@ -44,28 +32,93 @@ export const createAlbum = async (body: ElysiaContext) => {
             coverPath: coverPath,
         };
         
-        // 3. Insertar en la DB
-        // Drizzle ahora debe omitir id_album:
         const result = await db.insert(albums).values(albumData).returning();
-        
-        if (result.length === 0) {
-            throw new Error("Error al guardar los metadatos del álbum en la base de datos.");
-        }
+        return handleDrizzleResult(result, "Álbum", "crear");
 
-        return result[0];
     } catch (error: any) {
         console.error("Error al crear álbum o subir archivo:", error.message);
         throw new Error(`Fallo en la operación: ${error.message}`);
     }
 };
-// ----------------------------------------------------
-// Nota: Las siguientes funciones son placeholders, mantenidas para el contexto.
-// ----------------------------------------------------
 
-export const getAlbums = async () => { /* ... */ };
+// 2. OBTENER TODOS LOS ÁLBUMES
+export const getAlbums = async () => {
+    return await db.select({
+        id: albums.id,
+        name: albums.name,
+        releaseDate: albums.releaseDate,
+        coverPath: albums.coverPath,
+        artistId: albums.artistId,
+        artistName: artists.name
+    })
+    .from(albums)
+    .leftJoin(artists, eq(albums.artistId, artists.id))
+    .orderBy(desc(albums.id));
+};
 
-export const getAlbumById = async (context: ElysiaContext) => { /* ... */ };
+// 3. OBTENER UN ÁLBUM POR ID
+export const getAlbumById = async (id: number) => {
+    const result = await db.select({
+        id: albums.id,
+        name: albums.name,
+        releaseDate: albums.releaseDate,
+        coverPath: albums.coverPath,
+        artistId: albums.artistId,
+        artistName: artists.name
+    })
+    .from(albums)
+    .leftJoin(artists, eq(albums.artistId, artists.id))
+    .where(eq(albums.id, id));
+    
+    return handleDrizzleResult(result, "Álbum", "obtener");
+};
 
-export const updateAlbum = async (context: ElysiaContext) => { /* ... */ };
+// 4. ACTUALIZAR UN ÁLBUM
+export const updateAlbum = async (id: number, body: Partial<NewAlbum>) => {
+    const result = await db.update(albums)
+        .set(body)
+        .where(eq(albums.id, id))
+        .returning();
 
-export const deleteAlbum = async (context: ElysiaContext) => { /* ... */ };
+    return handleDrizzleResult(result, "Álbum", "actualizar");
+};
+
+// 5. ELIMINAR UN ÁLBUM
+export const deleteAlbum = async (id: number) => {
+    const result = await db.delete(albums).where(eq(albums.id, id)).returning();
+    return handleDeleteResult(result, "Álbum");
+};
+
+// 6. BUSCAR ÁLBUMES
+export const searchAlbums = async (searchTerm: string) => {
+    const searchPattern = `%${searchTerm}%`;
+    return await db.select({
+        id: albums.id,
+        name: albums.name,
+        releaseDate: albums.releaseDate,
+        coverPath: albums.coverPath,
+        artistId: albums.artistId,
+        artistName: artists.name
+    })
+    .from(albums)
+    .leftJoin(artists, eq(albums.artistId, artists.id))
+    .where(or(
+        like(albums.name, searchPattern),
+        like(artists.name, searchPattern)
+    ))
+    .orderBy(desc(albums.name));
+};
+
+// 7. OBTENER ÁLBUMES POR ARTISTA
+export const getAlbumsByArtistId = async (artistId: number) => {
+    return await db.select({
+        id: albums.id,
+        name: albums.name,
+        releaseDate: albums.releaseDate,
+        coverPath: albums.coverPath,
+        artistName: artists.name
+    })
+    .from(albums)
+    .leftJoin(artists, eq(albums.artistId, artists.id))
+    .where(eq(albums.artistId, artistId));
+};
