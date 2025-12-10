@@ -1,138 +1,77 @@
 import { writable } from 'svelte/store';
-import type { Song } from '../types/api';
 
-/**
- * Interface for the state of our global player.
- */
+// Definimos la estructura básica
 interface PlayerState {
-  playlist: Song[];
-  currentSongIndex: number;
-  currentSong: Song | null;
   isPlaying: boolean;
-  currentTime: number;
-  duration: number;
+  currentSong: any | null; // Tu tipo Song
+  queue: any[];            // <--- ESTA ES LA CLAVE: La lista de contexto actual
+  currentIndex: number;
   volume: number;
+  duration: number;
+  currentTime: number;
 }
 
-const initialPlayerState: PlayerState = {
-  playlist: [],
-  currentSongIndex: -1,
-  currentSong: null,
+const initialState: PlayerState = {
   isPlaying: false,
-  currentTime: 0,
+  currentSong: null,
+  queue: [], 
+  currentIndex: -1,
+  volume: 1,
   duration: 0,
-  volume: 0.75,
+  currentTime: 0
 };
 
-const { subscribe, set, update } = writable<PlayerState>(initialPlayerState);
+function createPlayerStore() {
+  const { subscribe, update, set } = writable(initialState);
 
-/**
- * Custom Svelte store with actions to control the music player.
- */
-export const playerStore = {
-  subscribe,
-  set,
-  update,
-
-  /**
-   * Plays a song from a playlist context.
-   * @param song - The song object to play.
-   * @param playlist - The array of songs that provides the context for next/previous.
-   */
-  playSong: (song: Song, playlist: Song[]) => {
-    update(state => {
-      const songIndex = playlist.findIndex(s => s.id_song === song.id_song);
-
-      // If it's the same song, just toggle play/pause
-      if (state.currentSong?.id_song === song.id_song) {
-        return { ...state, isPlaying: !state.isPlaying };
-      }
-
-      // It's a new song or a new context
-      return {
-        ...state,
-        playlist,
-        currentSongIndex: songIndex,
+  return {
+    subscribe,
+    setVolume: (v: number) => update(s => ({ ...s, volume: v })),
+    
+    // ACCIÓN MAESTRA: Play con Contexto
+    // Cuando haces click en una canción en la UI, pasas la canción Y la lista donde está
+    playContext: (song: any, contextList: any[]) => {
+      const index = contextList.findIndex(s => s.id_song === song.id_song);
+      update(s => ({
+        ...s,
+        isPlaying: true,
         currentSong: song,
-        isPlaying: true,
-        currentTime: 0,
-      };
-    });
-  },
+        queue: contextList, // Guardamos el contexto actual (Home, Playlist, etc)
+        currentIndex: index
+      }));
+    },
 
-  /**
-   * Plays the next song in the current playlist.
-   */
-  playNext: () => {
-    update(state => {
-      const nextIndex = state.currentSongIndex + 1;
-      if (nextIndex >= state.playlist.length) {
-        // End of playlist, stop playing
-        return { ...state, isPlaying: false };
-      }
+    togglePlay: () => update(s => ({ ...s, isPlaying: !s.isPlaying })),
+
+    playNext: () => update(s => {
+      // Si no hay siguiente, no hacemos nada o volvemos al inicio (loop)
+      if (s.currentIndex >= s.queue.length - 1) return s; 
+      
+      const nextIndex = s.currentIndex + 1;
       return {
-        ...state,
-        currentSongIndex: nextIndex,
-        currentSong: state.playlist[nextIndex],
-        currentTime: 0,
-        isPlaying: true,
+        ...s,
+        currentIndex: nextIndex,
+        currentSong: s.queue[nextIndex],
+        isPlaying: true
       };
-    });
-  },
+    }),
 
-  /**
-   * Plays the previous song in the current playlist.
-   */
-  playPrevious: () => {
-    update(state => {
-      const prevIndex = state.currentSongIndex - 1;
-      if (prevIndex < 0) {
-        // Before the start of the playlist, do nothing or stop
-        return state;
-      }
+    playPrevious: () => update(s => {
+      if (s.currentIndex <= 0) return s;
+      
+      const prevIndex = s.currentIndex - 1;
       return {
-        ...state,
-        currentSongIndex: prevIndex,
-        currentSong: state.playlist[prevIndex],
-        currentTime: 0,
-        isPlaying: true,
+        ...s,
+        currentIndex: prevIndex,
+        currentSong: s.queue[prevIndex],
+        isPlaying: true
       };
-    });
-  },
+    }),
 
-  /**
-   * Toggles the play/pause state of the current song.
-   */
-  togglePlay: () => {
-    update(state => {
-      if (!state.currentSong) return state;
-      return { ...state, isPlaying: !state.isPlaying };
-    });
-  },
+    // Helpers para actualizar tiempos desde el componente de audio
+    updateTime: (time: number) => update(s => ({ ...s, currentTime: time })),
+    setDuration: (d: number) => update(s => ({ ...s, duration: d })),
+  };
+}
 
-  /**
-   * Pauses the music.
-   */
-  pause: () => {
-    update(state => ({ ...state, isPlaying: false }));
-  },
-
-  /**
-   * Seeks to a specific time in the current song.
-   * @param time - The time to seek to, in seconds.
-   */
-  seek: (time: number) => {
-    update(state => ({ ...state, currentTime: time }));
-  },
-
-  /**
-   * Sets the player volume.
-   * @param volume - The volume level (0.0 to 1.0).
-   */
-  setVolume: (volume: number) => {
-    // Clamp volume between 0 and 1
-    const newVolume = Math.max(0, Math.min(1, volume));
-    update(state => ({ ...state, volume: newVolume }));
-  },
-};
-
+export const playerStore = createPlayerStore();

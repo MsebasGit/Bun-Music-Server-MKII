@@ -10,7 +10,7 @@
 
     // On mount, we only need to fetch the list of playlists once for the whole grid.
     onMount(async () => {
-        const result = await playlistApi.getAll();
+        const result = await playlistApi.getMe();
         if (result.success) {
             playlists = result.data || [];
         } else {

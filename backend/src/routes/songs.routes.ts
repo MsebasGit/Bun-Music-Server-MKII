@@ -8,6 +8,8 @@ import {
   handleDeleteSong
 } from "../controllers/song.controller"; // Import new controller
 
+
+
 export const songRoutes = new Elysia({ prefix: "/songs" })
   // Este 'guard' se aplica a todas las rutas definidas dentro de él.
   .guard(
@@ -20,14 +22,28 @@ export const songRoutes = new Elysia({ prefix: "/songs" })
         // POST /api/v1/songs
         .post("/", handleCreateSong, {
           body: t.Object({
-            name: t.String(),
-            description: t.Optional(t.String()),
+            title: t.String(),
+            cover_image: t.File({
+              type: ['image/jpeg', 'image/png', 'image/webp']
+            }),
+            albumId: t.Optional(t.String()),
+            audio_file: t.File({
+              type: ['audio/mpeg', 'audio/wav', 'audio/ogg']
+            }),
+            language: t.Optional(t.String()),
+            genres: t.Optional(t.Array(t.String()))
           }),
         })
+        
         .put("/:_id", handleUpdateSong, {
           body: t.Object({
-            name: t.Optional(t.String()),
-            description: t.Optional(t.String()),
+            title: t.String(),
+            cover_image: t.File({
+              type: ['image/jpeg', 'image/png', 'image/webp']
+            }),
+            albumId: t.Optional(t.String()),
+            language: t.Optional(t.String()),
+            genres: t.Optional(t.Array(t.String()))
           }),
         })
         .delete("/:_id", handleDeleteSong )

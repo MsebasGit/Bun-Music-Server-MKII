@@ -1,166 +1,161 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
-  import { playerStore } from '../stores/playerStore';
-  import { Footer, Button, Progressbar, Avatar, Tooltip } from 'flowbite-svelte';
-  import { Play, Pause, SpeakerWave, SpeakerXMark, ArrowLeft, ArrowRight } from 'svelte-heros-v2';
+  import { playerStore } from "../stores/playerStore";
+  import { Footer, Button, Range, Avatar, Tooltip } from "flowbite-svelte";
+  import {
+    Play,
+    Pause,
+    Forward,
+    Backward,
+    SpeakerWave,
+    SpeakerXMark,
+  } from "svelte-heros-v2";
 
   let audioPlayer: HTMLAudioElement;
-  let isMuted = false;
-  let lastVolume = $playerStore.volume;
-  
-  // Reactive statement to sync the audio element with the store
-  $: if (audioPlayer && $playerStore.currentSong) {
-    // Change source if song is different
-    const songUrl = $playerStore.currentSong.song_path;
 
-    if (songUrl && audioPlayer.src !== songUrl) {
-      audioPlayer.src = songUrl;
-      // When the source changes, we want to play it if the store says isPlaying
-      if ($playerStore.isPlaying) {
-        audioPlayer.play().catch(e => console.error("Audio playback failed on src change.", e));
-      }
+  // --- LÓGICA MINIMALISTA ---
+
+  // 1. Manejo de Audio (Igual que antes, robusto)
+  $: if ($playerStore.currentSong && audioPlayer) {
+    const newUrl = `${$playerStore.currentSong.song_path}`;
+    if (audioPlayer.src !== new URL(newUrl, document.baseURI).href) {
+      audioPlayer.src = newUrl;
+      audioPlayer.load();
+      if ($playerStore.isPlaying) audioPlayer.play().catch(() => {});
     }
-    
-    // Sync play/pause state
-    if ($playerStore.isPlaying && audioPlayer.paused) {
-      audioPlayer.play().catch(e => console.error("Audio playback failed on toggle.", e));
-    } else if (!$playerStore.isPlaying && !audioPlayer.paused) {
-      audioPlayer.pause();
-    }
-    
-    // Sync volume
+  }
+
+  $: if (audioPlayer) {
+    if ($playerStore.isPlaying && audioPlayer.paused)
+      audioPlayer.play().catch(() => {});
+    if (!$playerStore.isPlaying && !audioPlayer.paused) audioPlayer.pause();
     audioPlayer.volume = $playerStore.volume;
   }
-  
-  // Seek handling
-  function handleSeek(e: MouseEvent) {
-    if (!$playerStore.duration) return;
-    const progressContainer = e.currentTarget as HTMLElement;
-    const clickPosition = e.clientX - progressContainer.getBoundingClientRect().left;
-    const percentage = clickPosition / progressContainer.clientWidth;
-    const newTime = $playerStore.duration * percentage;
-    audioPlayer.currentTime = newTime;
-    playerStore.seek(newTime);
-  }
-  
-  // Volume handling
-  function handleVolumeChange(e: Event) {
-    const newVolume = parseFloat((e.target as HTMLInputElement).value);
-    playerStore.setVolume(newVolume);
-  }
 
-  function toggleMute() {
-    if (isMuted) {
-      playerStore.setVolume(lastVolume);
-      isMuted = false;
-    } else {
-      lastVolume = $playerStore.volume;
-      playerStore.setVolume(0);
-      isMuted = true;
-    }
-  }
-  
-  // Time formatting utility
-  function formatTime(seconds: number): string {
-    if (isNaN(seconds) || seconds === 0) return '0:00';
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = Math.floor(seconds % 60);
-    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
-  }
+  // 2. Helpers UI
+  const formatTime = (s: number) => {
+    if (!s) return "0:00";
+    return `${Math.floor(s / 60)}:${Math.floor(s % 60)
+      .toString()
+      .padStart(2, "0")}`;
+  };
 
-  // Update mute state based on volume
-  $: isMuted = $playerStore.volume === 0;
+  // Validaciones para deshabilitar botones
+  $: hasNext = $playerStore.currentIndex < $playerStore.queue.length - 1;
+  $: hasPrev = $playerStore.currentIndex > 0;
 
-  // Reactive variables to control button state
-  $: canPlayPrevious = $playerStore.currentSongIndex > 0;
-  $: canPlayNext = $playerStore.currentSongIndex < $playerStore.playlist.length - 1;
+  // En tu <script lang="ts">
+  function handleSeek(e: Event) {
+    const target = e.target as HTMLInputElement; // <--- Aquí hacemos la afirmación de tipo
+    audioPlayer.currentTime = +target.value;
+  }
 </script>
 
-<!-- The actual audio element, hidden from view -->
-<audio 
+<audio
   bind:this={audioPlayer}
-  on:timeupdate={() => playerStore.update(s => ({...s, currentTime: audioPlayer.currentTime}))}
-  on:loadedmetadata={() => playerStore.update(s => ({...s, duration: audioPlayer.duration}))}
+  on:timeupdate={() => playerStore.updateTime(audioPlayer.currentTime)}
+  on:loadedmetadata={() => playerStore.setDuration(audioPlayer.duration)}
   on:ended={() => playerStore.playNext()}
 ></audio>
 
 {#if $playerStore.currentSong}
-  <Footer>
-    <div class="container mx-auto h-full px-4 sm:px-6 lg:px-8">
-      <div class="flex items-center justify-between h-full gap-4">
-        
-        <!-- Song Info -->
-        <div class="flex items-center gap-3 w-1/4 min-w-0">
-          <Avatar src={$playerStore.currentSong.cover_path || '/default-cover.png'} size="md" />
-          <div class="truncate">
-            <p class="font-bold text-sm text-gray-900 dark:text-white truncate">{$playerStore.currentSong.title}</p>
-            <p class="text-xs text-gray-500 dark:text-gray-400 truncate">{$playerStore.currentSong.artist_names || 'Unknown Artist'}</p>
+  <div class="fixed bottom-0 w-full z-50">
+    <Footer
+      class="bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 shadow-xl p-2"
+    >
+      <div
+        class="container mx-auto flex items-center justify-between gap-4 h-16"
+      >
+        <div class="flex items-center gap-3 w-1/4">
+          <Avatar
+            src={`/img/${$playerStore.currentSong.cover_path}`}
+            size="md"
+          />
+          <div class="hidden sm:block overflow-hidden">
+            <p class="text-sm font-bold text-gray-900 dark:text-white truncate">
+              {$playerStore.currentSong.title}
+            </p>
+            <p class="text-xs text-gray-500 truncate">
+              {$playerStore.queue.length > 0
+                ? "En cola: " + $playerStore.queue.length
+                : ""}
+            </p>
           </div>
         </div>
 
-        <!-- Playback Controls & Progress -->
-        <div class="flex flex-col items-center justify-center flex-grow">
-          <div class="flex items-center gap-4 mb-2">
-            <Button onclick={() => playerStore.playPrevious()} disabled={!canPlayPrevious} class="p-2 rounded-full text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white disabled:opacity-50 disabled:cursor-not-allowed">
-              <ArrowLeft class="w-5 h-5" />
+        <div class="flex flex-col items-center flex-1 max-w-lg">
+          <div class="flex items-center gap-4 mb-1">
+            <Button
+              pill
+              color="light"
+              size="xs"
+              disabled={!hasPrev}
+              onclick={() => playerStore.playPrevious()}
+            >
+              <Backward size="16" />
             </Button>
-            <Button onclick={() => playerStore.togglePlay()} class="p-4 rounded-full bg-blue-600 hover:bg-blue-700 text-white">
+
+            <Button
+              pill
+              color="blue"
+              size="lg"
+              onclick={() => playerStore.togglePlay()}
+              class="p-3"
+            >
               {#if $playerStore.isPlaying}
-                <Pause class="w-6 h-6" />
+                <Pause size="20" class="text-white" />
               {:else}
-                <Play class="w-6 h-6" />
+                <Play size="20" class="text-white" />
               {/if}
             </Button>
-            <Button onclick={() => playerStore.playNext()} disabled={!canPlayNext} class="p-2 rounded-full text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white disabled:opacity-50 disabled:cursor-not-allowed">
-              <ArrowRight class="w-5 h-5" />
+
+            <Button
+              pill
+              color="light"
+              size="xs"
+              disabled={!hasNext}
+              onclick={() => playerStore.playNext()}
+            >
+              <Forward size="16" />
             </Button>
           </div>
-          <div class="flex items-center gap-2 w-full max-w-md">
-            <span class="text-xs font-mono text-gray-500 dark:text-gray-400">{formatTime($playerStore.currentTime)}</span>
-            <div 
-              role="slider"
-              aria-valuemin="0"
-              aria-valuemax={$playerStore.duration}
-              aria-valuenow={$playerStore.currentTime}
-              aria-valuetext={`progreso: ${formatTime($playerStore.currentTime)} de ${formatTime($playerStore.duration)}`}
-              tabindex="0"
-              class="w-full cursor-pointer" 
-              on:click={handleSeek}
-              on:keydown={(e) => {
-                if (e.key === 'ArrowRight') audioPlayer.currentTime += 5;
-                if (e.key === 'ArrowLeft') audioPlayer.currentTime -= 5;
-              }}
-            >
-                <Progressbar 
-                    progress={($playerStore.currentTime / $playerStore.duration * 100) || 0} 
-                    color="blue"
-                    size="h-1.5" 
-                />
-            </div>
-            <span class="text-xs font-mono text-gray-500 dark:text-gray-400">{formatTime($playerStore.duration)}</span>
+
+          <div
+            class="w-full flex items-center gap-2 text-xs text-gray-500 font-mono"
+          >
+            <span>{formatTime($playerStore.currentTime)}</span>
+            <Range
+              id="seek"
+              size="sm"
+              min="0"
+              max={$playerStore.duration || 100}
+              value={$playerStore.currentTime}
+              onchange={handleSeek}
+              class="cursor-pointer"
+            />
+            <span>{formatTime($playerStore.duration)}</span>
           </div>
         </div>
 
-        <!-- Volume Control -->
-        <div class="flex items-center gap-2 w-1/4 justify-end">
-            <Button onclick={toggleMute} class="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white">
-                {#if isMuted}
-                    <SpeakerXMark class="w-5 h-5"/>
-                {:else}
-                    <SpeakerWave class="w-5 h-5"/>
-                {/if}
-            </Button>
-            <input 
-                type="range" 
-                min="0" 
-                max="1" 
-                step="0.01"
-                bind:value={$playerStore.volume}
-                on:input={handleVolumeChange}
-                class="w-24 h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+        <div class="flex items-center justify-end w-1/4 gap-2">
+          <button
+            class="text-gray-500"
+            on:click={() =>
+              playerStore.setVolume($playerStore.volume === 0 ? 1 : 0)}
+          >
+            {#if $playerStore.volume === 0}
+              <SpeakerXMark size="18" />
+            {:else}
+              <SpeakerWave size="18" />
+            {/if}
+          </button>
+          <div class="w-24">
+            <Range
+              value={$playerStore.volume}
+              onchange={handleSeek}
             />
+          </div>
         </div>
       </div>
-    </div>
-  </Footer>
+    </Footer>
+  </div>
 {/if}

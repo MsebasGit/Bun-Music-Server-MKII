@@ -24,19 +24,48 @@ export const handleGetSongById = (context: Context) =>
 
 // --- 3. CREATE (Paso Directo - El más limpio) ---
 // createSong espera (body), handleRequest envía (body). ¡Match perfecto!
-export const handleCreateSong = (context: Context) => 
-    handleRequest(createSong, context, 201);
+export const handleCreateSong = (context: Context) => {
+    const artistId = (context as any).artist?.id;
+
+    if (!artistId) {
+        context.set.status = 403; // Forbidden
+        return { message: "Operation failed", error: "Only artists can create songs." };
+    }
+
+    return handleRequest((body) => 
+        createSong(body, artistId),
+        context, 
+        201
+    );
+}
 
 
 // --- 4. UPDATE (Combinación ID + Body) ---
-// Aquí recibimos el 'body' desde handleRequest y lo combinamos con el ID del contexto
-export const handleUpdateSong = (context: Context) => 
-    handleRequest((body) => updateSong(Number(context.params._id), body), context);
+export const handleUpdateSong = (context: Context) => {
+    const artistId = (context as any).artist?.id;
+    const songId = Number(context.params._id);
+
+    if (!artistId) {
+        context.set.status = 403; // Forbidden
+        return { message: "Operation failed", error: "Only the artist of the song can update it." };
+    }
+
+    return handleRequest((body) => updateSong(songId, body, artistId), context);
+}
 
 
 // --- 5. DELETE (Solo ID) ---
-export const handleDeleteSong = (context: Context) => 
-    handleRequest(() => deleteSong(Number(context.params._id)), context);
+export const handleDeleteSong = (context: Context) => {
+    const artistId = (context as any).artist?.id;
+    const songId = Number(context.params._id);
+
+    if (!artistId) {
+        context.set.status = 403; // Forbidden
+        return { message: "Operation failed", error: "Only the artist of the song can delete it." };
+    }
+
+    return handleRequest(() => deleteSong(songId, artistId), context);
+}
 
 
 // --- 6. SEARCH (Query Params) ---
