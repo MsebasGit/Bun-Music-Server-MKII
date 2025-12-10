@@ -8,7 +8,7 @@ export const users = sqliteTable("users", {
   id: integer("id_user").primaryKey({ autoIncrement: true }),
   name: text("name").notNull(),
   password: text("password").notNull(),
-  creationDate: text("creation_date").default(sql`(strftime('%Y-%m-%d %H:%M:%S', 'now'))`),
+  creationDate: text("creation_date").default(sql`CURRENT_TIMESTAMP`),
   email: text("email").notNull().unique(),
   preferences: text("preferences", { mode: 'json' }), // Para almacenar un objeto JSON como texto
 });
@@ -26,7 +26,7 @@ export const artists = sqliteTable("artists", {
 export const albums = sqliteTable("albums", {
   id: integer("id_album").primaryKey({ autoIncrement: true }),
   name: text("name").notNull(),
-  releaseDate: text("release_date"),
+  releaseDate: text("release_date").default(sql`(CURRENT_TIMESTAMP)`),
   coverPath: text("cover_path"),
   artistId: integer("id_artist").notNull().references(() => artists.id, { onDelete: 'cascade' }),
 });
@@ -35,7 +35,7 @@ export const songs = sqliteTable("songs", {
   id: integer("id_song").primaryKey({ autoIncrement: true }),
   title: text("title").notNull(),
   language: text("language"),
-  releaseDate: text("release_date"),
+  releaseDate: text("release_date").default(sql`(CURRENT_TIMESTAMP)`),
   duration: integer("duration").notNull(),
   songPath: text("song_path").notNull().unique(),
   coverPath: text("cover_path"),
@@ -48,8 +48,8 @@ export const playlists = sqliteTable("playlists", {
   id: integer("id_playlist").primaryKey({ autoIncrement: true }),
   name: text("name").notNull(),
   description: text("description"),
-  modificationDate: text("modification_date"),
-  creationDate: text("creation_date").default(sql`(strftime('%Y-%m-%d %H:%M:%S', 'now'))`),
+  modificationDate: text("modification_date").default(sql`(CURRENT_TIMESTAMP)`),
+  creationDate: text("creation_date").default(sql`(CURRENT_TIMESTAMP)`),
   userId: integer("id_user").references(() => users.id, { onDelete: 'set null' }),
 });
 
@@ -73,7 +73,7 @@ export const userSongRatings = sqliteTable("user_song_ratings", {
   userId: integer("id_user").notNull().references(() => users.id, { onDelete: 'cascade' }),
   songId: integer("id_song").notNull().references(() => songs.id, { onDelete: 'cascade' }),
   isLiked: integer("is_liked", { mode: 'boolean' }).notNull().default(true),
-  interactionDate: text("interaction_date").default(sql`(strftime('%Y-%m-%d %H:%M:%S', 'now'))`),
+  interactionDate: text("interaction_date").default(sql`(CURRENT_TIMESTAMP)`),
 }, (t) => ({
   pk: primaryKey({ columns: [t.userId, t.songId] }),
 }));
@@ -88,3 +88,4 @@ export type Playlist = typeof playlists.$inferSelect;
 export type NewPlaylist = typeof playlists.$inferInsert;
 export type NewSong = typeof songs.$inferInsert;
 // (Puedes añadir más tipos para las otras tablas si los necesitas)
+

@@ -7,44 +7,51 @@ import {
   deleteAlbum,
 } from '../services/album.service'; 
 import { handleRequest } from '../utilities/controllerUtils';
+import { Context } from 'elysia';
+export {
+  handleCreateAlbum
+};
 
 // Corregido: Usamos 'any' para el contexto de Elysia. 
 // Esto resuelve los errores de incompatibilidad de tipos entre rutas 
 // (ya que POST espera un 'body' con File, y GET/DELETE esperan 'params' sin 'body').
-type ElysiaContext = any; 
 
 /**
  * 1. Crear Álbum (POST /albums)
  * Delega la lógica de validación, subida de archivos y DB al servicio.
  */
-export const createAlbumController = (context: ElysiaContext) => 
-  handleRequest(createAlbum, context, 201);
+const handleCreateAlbum = (context: Context) => 
+  handleRequest(() => {
+    const artistId = (context as any).artist.id; 
+    return createAlbum(artistId, context.body);
+  }, context);
 
 /**
  * 2. Obtener Todos los Álbumes (GET /albums)
  */
-export const getAlbumsController = (context: ElysiaContext) => 
+const handleGetAlbums = (context: Context) => 
   handleRequest(getAlbums, context, 200);
 
 /**
  * 3. Obtener Álbum por ID (GET /albums/:id)
  */
-export const getAlbumByIdController = (context: ElysiaContext) => 
+const handleGetAlbumById = (context: Context) => 
   handleRequest(getAlbumById, context, 200);
 
 /**
  * 4. Actualizar Álbum (PUT /albums/:id)
- */
-export const updateAlbumController = (context: ElysiaContext) => 
+ 
+export const updateAlbumController = (context: Context) => 
   handleRequest(updateAlbum, context, 200);
+*/
 
 /**
  * 5. Eliminar Álbum (DELETE /albums/:id)
  * Se usa un manejador de éxito personalizado para devolver un mensaje claro.
  */
-export const deleteAlbumController = (context: ElysiaContext) => {
+const handleDeleteAlbum = (context: Context) => {
     // Manejador de éxito personalizado
-    const handleDeleteSuccess = (result: any, ctx: ElysiaContext) => {
+    const handleDeleteSuccess = (result: any, ctx: Context) => {
         ctx.set.status = 200;
         // La URL usa 'id', que es lo que está en ctx.params
         return { message: `Album with ID ${ctx.params.id} deleted successfully` }; 

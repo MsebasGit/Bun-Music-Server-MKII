@@ -3,11 +3,53 @@ import { db } from "../db";
 import { songs, albums, artists, songsToArtists, NewSong } from "../db/schema";
 import { eq, like, or, desc, sql } from "drizzle-orm";
 import { handleDrizzleResult, handleDeleteResult } from "../utilities/validationUtils";
+import { uploadAppImage, uploadSongFile } from '../utilities/storageUtils';
+import { parseBuffer } from 'music-metadata';
 
-// 1. CREAR CANCIÓN
-export const createSong = async (data: NewSong) => {
-    const result = await db.insert(songs).values(data).returning();
-    return handleDrizzleResult(result, "Canción", "crear");
+export const createSong = async (body: any) => {
+    // Ya no extraemos 'duration' del body, lo calcularemos nosotros.
+    // 'release_date' es opcional ahora.
+    const { title, cover_image, albumId, audio_file, language, genres } = body;
+
+    try {
+        if (!audio_file) throw new Error("El archivo de audio es obligatorio");
+
+        // --- PASO 1: EXTRACTOR DE METADATOS ---
+        // Convertimos el archivo de Bun (Blob) a Buffer para que music-metadata lo lea
+        const arrayBuffer = await audio_file.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
+
+        // Leemos los tags (ID3, etc.)
+        const metadata = await parseBuffer(buffer);
+
+        // 1.1 Calculamos Duración (Redondeamos a segundos enteros)
+        const calculatedDuration = Math.round(metadata.format.duration || 0);
+
+
+        // --- PASO 2: SUBIDA DE ARCHIVOS ---
+        // Subimos los archivos al disco
+        const coverPath = await uploadAppImage(cover_image, 'songs_covers');
+        const audioPath = await uploadSongFile(audio_file, 'audio_files');
+
+        // --- PASO 3: GUARDADO EN DB ---
+        const songData: NewSong = {
+            title: title,
+            duration: calculatedDuration, // ¡Automático!
+            songPath: audioPath!, 
+            coverPath: coverPath,
+            albumId: albumId ? Number(albumId) : null,
+            language: language || 'es', 
+            genres: genres ? JSON.stringify(genres) : null,
+        };
+
+        const result = await db.insert(songs).values(songData).returning();
+        
+        return handleDrizzleResult(result, "Canción", "crear");
+
+    } catch (error: any) {
+        console.error("Error en createSong:", error.message);
+        throw error;
+    }
 };
 
 // 2. OBTENER TODAS LAS CANCIONES (con artistas)
@@ -19,13 +61,13 @@ export const getAllSongs = async () => {
         albumName: albums.name,
         artists: sql`GROUP_CONCAT(${artists.name})`.as('artists')
     })
-    .from(songs)
-    .leftJoin(albums, eq(songs.albumId, albums.id))
-    .leftJoin(songsToArtists, eq(songs.id, songsToArtists.songId))
-    .leftJoin(artists, eq(songsToArtists.artistId, artists.id))
-    .groupBy(songs.id)
-    .orderBy(desc(songs.id));
-    
+        .from(songs)
+        .leftJoin(albums, eq(songs.albumId, albums.id))
+        .leftJoin(songsToArtists, eq(songs.id, songsToArtists.songId))
+        .leftJoin(artists, eq(songsToArtists.artistId, artists.id))
+        .groupBy(songs.id)
+        .orderBy(desc(songs.id));
+
     return result;
 };
 
@@ -36,12 +78,12 @@ export const getSongById = async (id: number) => {
         albumName: albums.name,
         artists: sql`GROUP_CONCAT(${artists.name})`.as('artists')
     })
-    .from(songs)
-    .leftJoin(albums, eq(songs.albumId, albums.id))
-    .leftJoin(songsToArtists, eq(songs.id, songsToArtists.songId))
-    .leftJoin(artists, eq(songsToArtists.artistId, artists.id))
-    .where(eq(songs.id, id))
-    .groupBy(songs.id);
+        .from(songs)
+        .leftJoin(albums, eq(songs.albumId, albums.id))
+        .leftJoin(songsToArtists, eq(songs.id, songsToArtists.songId))
+        .leftJoin(artists, eq(songsToArtists.artistId, artists.id))
+        .where(eq(songs.id, id))
+        .groupBy(songs.id);
 
     return handleDrizzleResult(result, "Canción", "obtener");
 };
@@ -65,10 +107,13 @@ export const searchSongs = async (searchTerm: string) => {
     // Una alternativa es hacer el filtro en la aplicación o con una vista/raw query.
     // Esta es una aproximación:
     const allSongs = await getAllSongs(); // Reutilizamos la función anterior
-    return allSongs.filter(s => 
+    return allSongs.filter(s =>
         s.song.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (s.albumName && s.albumName.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (s.artists && s.artists.toLowerCase().includes(searchTerm.toLowerCase()))
+        // CORRECCIÓN: Forzamos a que lo trate como un array
+        (s.artists && (s.artists as any[]).some((a: any) =>
+            a.name && a.name.toLowerCase().includes(searchTerm.toLowerCase())
+        ))
     );
 };
 

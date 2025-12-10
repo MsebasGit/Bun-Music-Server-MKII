@@ -1,43 +1,47 @@
-import { db } from "../db"; 
-import { albums, artists, type NewAlbum } from "../db/schema"; 
-import { handleFileUpload } from '../utilities/fileUtils';
-import { eq, like, or, desc } from "drizzle-orm"; 
+import { db } from "../db";
+import { albums, artists, type NewAlbum } from "../db/schema";
+import { uploadAppImage } from '../utilities/storageUtils';
+import { eq, like, or, desc } from "drizzle-orm";
 import { handleDrizzleResult, handleDeleteResult } from "../utilities/validationUtils";
 
 // (El tipo ElysiaContext se mantiene igual)
-type ElysiaContext = { 
-    params?: { id: string | number }; 
+type ElysiaContext = {
+    params?: { id: string | number };
     body: {
         name: string;
         release_date: string;
-        id_artist: string | number; 
+        id_artist: string | number;
         cover_image: File; // Objeto File de Elysia/Bun
         [key: string]: any;
     };
-    [key: string]: any 
+    [key: string]: any
 };
 
 // 1. CREAR ÁLBUM
-export const createAlbum = async (body: ElysiaContext) => {
-    const { name, release_date, id_artist, cover_image } = body;
-    const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp'];
-    const DESTINATION_DIR = '/img/album_covers'; 
+export const createAlbum = async (id_artist: number, body: any) => {
+    const { name,  cover_image } = body;
 
     try {
-        const coverPath = await handleFileUpload(cover_image, ALLOWED_EXTENSIONS, DESTINATION_DIR);
-        const albumData: NewAlbum = { 
+        // 1. Delegamos la lógica de archivos a una sola línea reutilizable
+        // 'album_covers' es el nombre de la carpeta específica
+        const coverPath = await uploadAppImage(cover_image, 'album_covers');
+
+        // Validación opcional: ¿Es obligatorio tener portada?
+        if (!coverPath) throw new Error("La imagen de portada es obligatoria");
+
+        const albumData: NewAlbum = {
             name,
-            releaseDate: release_date,
-            artistId: Number(id_artist),
+            artistId: id_artist,
             coverPath: coverPath,
         };
-        
+
         const result = await db.insert(albums).values(albumData).returning();
         return handleDrizzleResult(result, "Álbum", "crear");
 
     } catch (error: any) {
-        console.error("Error al crear álbum o subir archivo:", error.message);
-        throw new Error(`Fallo en la operación: ${error.message}`);
+        console.error("Error en createAlbum:", error.message);
+        // Es buena práctica relanzar el error para que handleRequest (tu controller) lo capture
+        throw error;
     }
 };
 
@@ -51,9 +55,9 @@ export const getAlbums = async () => {
         artistId: albums.artistId,
         artistName: artists.name
     })
-    .from(albums)
-    .leftJoin(artists, eq(albums.artistId, artists.id))
-    .orderBy(desc(albums.id));
+        .from(albums)
+        .leftJoin(artists, eq(albums.artistId, artists.id))
+        .orderBy(desc(albums.id));
 };
 
 // 3. OBTENER UN ÁLBUM POR ID
@@ -66,10 +70,10 @@ export const getAlbumById = async (id: number) => {
         artistId: albums.artistId,
         artistName: artists.name
     })
-    .from(albums)
-    .leftJoin(artists, eq(albums.artistId, artists.id))
-    .where(eq(albums.id, id));
-    
+        .from(albums)
+        .leftJoin(artists, eq(albums.artistId, artists.id))
+        .where(eq(albums.id, id));
+
     return handleDrizzleResult(result, "Álbum", "obtener");
 };
 
@@ -100,13 +104,13 @@ export const searchAlbums = async (searchTerm: string) => {
         artistId: albums.artistId,
         artistName: artists.name
     })
-    .from(albums)
-    .leftJoin(artists, eq(albums.artistId, artists.id))
-    .where(or(
-        like(albums.name, searchPattern),
-        like(artists.name, searchPattern)
-    ))
-    .orderBy(desc(albums.name));
+        .from(albums)
+        .leftJoin(artists, eq(albums.artistId, artists.id))
+        .where(or(
+            like(albums.name, searchPattern),
+            like(artists.name, searchPattern)
+        ))
+        .orderBy(desc(albums.name));
 };
 
 // 7. OBTENER ÁLBUMES POR ARTISTA
@@ -118,7 +122,7 @@ export const getAlbumsByArtistId = async (artistId: number) => {
         coverPath: albums.coverPath,
         artistName: artists.name
     })
-    .from(albums)
-    .leftJoin(artists, eq(albums.artistId, artists.id))
-    .where(eq(albums.artistId, artistId));
+        .from(albums)
+        .leftJoin(artists, eq(albums.artistId, artists.id))
+        .where(eq(albums.artistId, artistId));
 };

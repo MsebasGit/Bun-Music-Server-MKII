@@ -3,11 +3,7 @@ import { Elysia, t } from "elysia";
 import { jwt } from "@elysiajs/jwt";
 // Importamos todos los controladores como un objeto para usarlos como handlers
 import {
-  createAlbumController,
-  getAlbumsController,
-  getAlbumByIdController,
-  updateAlbumController,
-  deleteAlbumController,
+  handleCreateAlbum
 } from "../controllers/album.controller"; 
 
 // Configuración del JWT

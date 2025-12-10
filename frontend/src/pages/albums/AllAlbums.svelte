@@ -1,4 +1,4 @@
-<script lang="ts">
+ <script lang="ts">
     import { onMount } from "svelte";
     import { Spinner, Heading } from "flowbite-svelte";
     import { albumApi } from "../../services/apiClient";

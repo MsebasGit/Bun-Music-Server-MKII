@@ -1,4 +1,5 @@
 // src/guards/auth.guard.ts
+import { isUserAnArtist, getArtistByUserId } from "../services/artist.service";
 
 export const authGuard = async (context: any) => {
   const { jwt, set, headers, request } = context;
@@ -21,7 +22,15 @@ export const authGuard = async (context: any) => {
     return { message: "Unauthorized: Invalid token" };
   }
 
+  if(await isUserAnArtist(payload.userId)) {
+    const artist = await getArtistByUserId(payload.userId);
+    console.log(`[${new Date().toISOString()}] Auth SUCCESS for artist:`, artist?.name);
+    // Attach artist info to the context for the next handler
+    context.artist = artist;
+  }
+
   console.log(`[${new Date().toISOString()}] Auth SUCCESS for user:`, payload.userId);
   // Attach user to the context for the next handler
   context.user = payload;
+  
 };
