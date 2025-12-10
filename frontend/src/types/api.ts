@@ -25,12 +25,13 @@ export interface Album {
 }
 
 export interface Artist {
-  id_artist: number;
+  id: number;
   name: string;
   nationality: string;
   biography: string;
-  debut_date: string;
-  id_user: number;
+  debutDate: string | null;
+  userId: number;
+  socialLinks: { name: string; url: string; }[] | null;
 }
 
 export interface User {

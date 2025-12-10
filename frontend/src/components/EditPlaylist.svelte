@@ -1,6 +1,8 @@
 <script lang="ts">
     import { playlistApi } from "../services/apiClient";
     import type { Playlist } from "../types/api";
+    import { createEventDispatcher } from "svelte";
+    const dispatch = createEventDispatcher();
 
     // Importamos los componentes necesarios de flowbite-svelte
     import {
@@ -11,9 +13,6 @@
         Alert,
         Spinner,
     } from "flowbite-svelte";
-
-    import { createEventDispatcher } from "svelte";
-    const dispatch = createEventDispatcher();
 
     export let playlist: Playlist; // Correctly type the playlist prop
     export let onClose: () => void;
@@ -31,17 +30,18 @@
 
         try {
             const updatedPlaylistPayload = { name, description };
-            
+
             const response = await playlistApi.update(
                 playlist.id,
-                updatedPlaylistPayload
+                updatedPlaylistPayload,
             );
 
             if (response.success) {
-                dispatch('playlistActionCompleted'); // Notify parent that an action was completed
+                dispatch("playlistActionCompleted"); // Notify parent that an action was completed
                 onClose(); // Close the modal on success
             } else {
-                errorMessage = response.error || "Error al actualizar la playlist";
+                errorMessage =
+                    response.error || "Error al actualizar la playlist";
             }
         } catch (error: any) {
             errorMessage = "Error de red o desconocido";
