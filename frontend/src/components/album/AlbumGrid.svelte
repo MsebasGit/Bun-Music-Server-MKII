@@ -1,5 +1,5 @@
 <script lang="ts">
-    import type { Album } from "../types/api";
+    import type { Album } from "../../types/api";
     import { Card } from "flowbite-svelte";
 
     export let albums: Album[] = [];

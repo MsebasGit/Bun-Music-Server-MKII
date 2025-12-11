@@ -8,6 +8,7 @@ import {
     handleDeleteArtist,
     handleSearchArtists
 } from '../controllers/artist.controller';
+import { handleGetAlbumsByArtist } from '../controllers/album.controller';
 import { authGuard } from '../guards/auth.guard';
 
 export const artistRoutes = new Elysia({ prefix: '/artists' })
@@ -15,6 +16,11 @@ export const artistRoutes = new Elysia({ prefix: '/artists' })
     .get('/', handleGetAllArtists)
     .get('/search', handleSearchArtists) // e.g., /api/v1/artists/search?q=nombre
     .get('/:id', handleGetArtistById)
+    .get('/:id/albums', handleGetAlbumsByArtist, {
+        params: t.Object({
+            id: t.Numeric()
+        })
+    })
 
     // --- Rutas Protegidas ---
     .guard({

@@ -112,13 +112,13 @@ export const playlistApi = {
     return apiClientCall(axiosInstance.get<Song[]>(`/api/v1/playlists/${playlistId}/songs`));
   },
   addSong: async (playlistId: number, songId: number): Promise<ApiResponse<void>> => {
-    return apiClientCall(axiosInstance.post<void>(`/playlists/${playlistId}/songs`, { id_song: songId }));
+    return apiClientCall(axiosInstance.post<void>(`/api/v1/playlists/${playlistId}/songs`, { songId: songId }));
   },
   removeSong: async (playlistId: number, songId: number): Promise<ApiResponse<void>> => {
     return apiClientCall(axiosInstance.delete<void>(`/playlists/${playlistId}/songs/${songId}`));
   },
-  getPlaylistsWhereSongNotExist: async (songId: number, userId: number): Promise<ApiResponse<Playlist[]>> => {
-    return apiClientCall(axiosInstance.get<Playlist[]>(`/api/v1/playlists/song-not-exist/${songId}/user/${userId}`));
+  getPlaylistsWhereSongNotExist: async (songId: number): Promise<ApiResponse<Playlist[]>> => {
+    return apiClientCall(axiosInstance.get<Playlist[]>(`/api/v1/songs/${songId}/not-in-playlists`));
   },
 };
 
@@ -163,7 +163,7 @@ export const albumApi = {
     return apiClientCall(axiosInstance.get<Album[]>(`/albums/search?term=${encodeURIComponent(searchTerm)}`));
   },
   getByArtistId: async (artistId: number): Promise<ApiResponse<Album[]>> => {
-    return apiClientCall(axiosInstance.get<Album[]>(`/albums/artist/${artistId}`));
+    return apiClientCall(axiosInstance.get<Album[]>(`/api/v1/artists/${artistId}/albums`));
   },
   create: async (newAlbum: Omit<Album, 'id_album' | 'release_date' | 'artist_name'>): Promise<ApiResponse<void>> => {
     return apiClientCall(axiosInstance.post<void>('/albums', newAlbum));

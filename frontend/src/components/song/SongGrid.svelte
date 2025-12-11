@@ -27,7 +27,7 @@
     <div class="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-4">
         {#each songs as song (song.id_song)}
             <!-- Render a SongCard for each song, passing down the song data and the playlists list -->
-            <SongCard {song} {playlists} playlistContext={songs} />
+            <SongCard {song} playlistContext={songs} />
         {/each}
     </div>
 {/if}

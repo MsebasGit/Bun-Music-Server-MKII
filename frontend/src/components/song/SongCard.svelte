@@ -2,24 +2,45 @@
     import type { Song, Playlist } from "../../types/api";
     import { Card, Popover, Button } from "flowbite-svelte";
     import { PlayCircle, PauseCircle, Heart, Bookmark } from "svelte-heros-v2";
+    import { playlistApi } from "../../services/apiClient";
 
     import { playerStore } from "../../stores/playerStore";
     import { likedSongsStore } from "../../stores/likesStore";
+    import { onMount } from "svelte";
 
     export let song: Song;
-    export let playlists: Playlist[];
+
+    let playlists: Playlist[];
     export let playlistContext: Song[] = [];
 
     // --- ESTADO LOCAL Y STORES ---
     let currentPlayingId: number | null = null;
     let isPlaying: boolean = false;
     let isLiking: boolean = false;
-
+    let error: string | null = null;
+    let loading: boolean = true;
+    
     // Suscripciones a los stores para reactividad
     playerStore.subscribe((store) => {
         currentPlayingId = store.currentSong?.id_song ?? null;
         isPlaying = store.isPlaying;
     });
+
+    
+    onMount(async () => {
+        // Fetch artist data first
+        const artistResult = await playlistApi.getPlaylistsWhereSongNotExist(song.id_song);
+        if (artistResult.success && artistResult.data) {
+            playlists = artistResult.data;
+            
+ 
+        } else {
+            error = artistResult.error || "Failed to fetch artist details";
+        }
+        
+        loading = false;
+    });
+
 
     // --- MANEJADORES DE ACCIONES ---
     function handlePlay(e: MouseEvent) {
@@ -50,12 +71,14 @@
 
     async function handleAddToPlaylist(e: MouseEvent, playlistId: number) {
         e.stopPropagation();
-        console.log(
-            `SIMULACIÓN: Añadiendo canción ${song.id_song} a playlist ${playlistId}`,
-        );
-        alert(`Canción añadida a la playlist (simulación)`);
-        // Aquí iría tu llamada a la API real:
-        // await playlistApi.addSongToPlaylist(playlistId, song.id_song);
+        
+        const result = await playlistApi.addSong(playlistId, song.id_song);
+
+        if (result.success) {
+            alert(`Canción añadida a la playlist!`);
+        } else {
+            alert(`Error al añadir la canción: ${result.error}`);
+        }
     }
 </script>
 

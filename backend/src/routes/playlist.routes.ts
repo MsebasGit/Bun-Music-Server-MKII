@@ -25,11 +25,11 @@ export const playlistRoutes = new Elysia({ prefix: "/playlists" })
             description: t.Optional(t.String()),
           }),
         })
-        .put("/:_id", handleUpdatePlaylist, {
+        .put("/:id", handleUpdatePlaylist, {
           body: t.Object({
             name: t.Optional(t.String()),
             description: t.Optional(t.String()),
           }),
         })
-        .delete("/:_id", handleDeletePlaylist )
+        .delete("/:id", handleDeletePlaylist )
   );

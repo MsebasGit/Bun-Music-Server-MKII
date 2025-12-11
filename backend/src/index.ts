@@ -8,6 +8,7 @@ import { albumRoutes } from "./routes/album.routes";
 import { songRoutes } from "./routes/songs.routes";
 import { artistSongRoutes } from "./routes/artistSong.routes";
 import { artistRoutes } from "./routes/artist.routes";
+import { playlistSongRoutes } from "./routes/playlistSong.routes";
 
 
 // DEBUG: Esto nos dirá exactamente dónde cree Bun que está
@@ -29,6 +30,7 @@ const app = new Elysia()
     app
       .use(authRoutes)
       .use(playlistRoutes)
+      .use(playlistSongRoutes)
       .use(albumRoutes)
       .use(songRoutes)
       .use(artistRoutes)

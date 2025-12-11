@@ -58,7 +58,7 @@ export const handleInsertPlaylistSongController = (context: ElysiaContext) => {
     
     const serviceFunction = async () => {
         // Extrae IDs del parámetro de ruta y el cuerpo de la petición
-        const id_playlist = context.params.playlistId as number;
+        const id_playlist = context.params.id as number;
         const id_song = context.body.songId as number; // Asumido desde la validación de la ruta
         
         await insertPlaylistSongDb(id_playlist, id_song);
@@ -70,13 +70,13 @@ export const handleInsertPlaylistSongController = (context: ElysiaContext) => {
 
 
 /**
- * 4. DELETE /api/v1/playlists/:playlistId/songs/:songId: Eliminar una canción de una playlist
+ * 4. DELETE /api/v1/playlists/:id/songs/:songId: Eliminar una canción de una playlist
  */
 export const handleDeletePlaylistSongController = (context: ElysiaContext) => {
     
     const serviceFunction = async () => {
         // Extrae IDs de los parámetros de ruta
-        const id_playlist = context.params.playlistId as number;
+        const id_playlist = context.params.id as number;
         const id_song = context.params.songId as number;
         
         await deleteSongInPlaylistDb(id_playlist, id_song);

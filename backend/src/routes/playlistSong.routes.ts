@@ -12,7 +12,7 @@ import {
 
 // --- API REST ROUTES ---
 
-export const playlistSongRoutes = new Elysia({ prefix: "/api/v1" })
+export const playlistSongRoutes = new Elysia()
   
   // Usamos .guard() con tu función authGuard 
   .guard(
@@ -35,22 +35,21 @@ export const playlistSongRoutes = new Elysia({ prefix: "/api/v1" })
           }),
         })
 
-        // 3. POST /api/v1/playlists/:playlistId/songs: Agregar una canción a una playlist
-        // Protegida por authGuard
-        .post("/playlists/:playlistId/songs", handleInsertPlaylistSongController, {
+        // 3. POST /api/v1/playlists/:id/songs: Agregar una canción a una playlist
+        .post("/playlists/:id/songs", handleInsertPlaylistSongController, {
           params: t.Object({
-            playlistId: t.Numeric(),
+            id: t.Numeric(),
           }),
           body: t.Object({
             songId: t.Number() 
           }),
         })
 
-        // 4. DELETE /api/v1/playlists/:playlistId/songs/:songId: Eliminar una canción de una playlist
+        // 4. DELETE /api/v1/playlists/:id/songs/:songId: Eliminar una canción de una playlist
         // Protegida por authGuard
-        .delete("/playlists/:playlistId/songs/:songId", handleDeletePlaylistSongController, {
+        .delete("/playlists/:id/songs/:songId", handleDeletePlaylistSongController, {
           params: t.Object({
-            playlistId: t.Numeric(),
+            id: t.Numeric(),
             songId: t.Numeric()
           }),
         })

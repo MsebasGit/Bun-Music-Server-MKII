@@ -19,7 +19,7 @@ type ElysiaContext = {
 
 // 1. CREAR ÁLBUM
 export const createAlbum = async (id_artist: number, body: any) => {
-    const { name,  cover_image } = body;
+    const { name, releaseDate, cover_image } = body;
 
     try {
         // 1. Delegamos la lógica de archivos a una sola línea reutilizable
@@ -31,6 +31,7 @@ export const createAlbum = async (id_artist: number, body: any) => {
 
         const albumData: NewAlbum = {
             name,
+            releaseDate: releaseDate,
             artistId: id_artist,
             coverPath: coverPath,
         };
@@ -48,12 +49,12 @@ export const createAlbum = async (id_artist: number, body: any) => {
 // 2. OBTENER TODOS LOS ÁLBUMES
 export const getAlbums = async () => {
     return await db.select({
-        id: albums.id,
+        id_album: albums.id,
         name: albums.name,
-        releaseDate: albums.releaseDate,
-        coverPath: albums.coverPath,
-        artistId: albums.artistId,
-        artistName: artists.name
+        release_date: albums.releaseDate,
+        cover_path: albums.coverPath,
+        id_artist: albums.artistId,
+        artist_name: artists.name
     })
         .from(albums)
         .leftJoin(artists, eq(albums.artistId, artists.id))
@@ -63,12 +64,12 @@ export const getAlbums = async () => {
 // 3. OBTENER UN ÁLBUM POR ID
 export const getAlbumById = async (id: number) => {
     const result = await db.select({
-        id: albums.id,
+        id_album: albums.id,
         name: albums.name,
-        releaseDate: albums.releaseDate,
-        coverPath: albums.coverPath,
-        artistId: albums.artistId,
-        artistName: artists.name
+        release_date: albums.releaseDate,
+        cover_path: albums.coverPath,
+        id_artist: albums.artistId,
+        artist_name: artists.name
     })
         .from(albums)
         .leftJoin(artists, eq(albums.artistId, artists.id))
@@ -97,12 +98,12 @@ export const deleteAlbum = async (id: number) => {
 export const searchAlbums = async (searchTerm: string) => {
     const searchPattern = `%${searchTerm}%`;
     return await db.select({
-        id: albums.id,
+        id_album: albums.id,
         name: albums.name,
-        releaseDate: albums.releaseDate,
-        coverPath: albums.coverPath,
-        artistId: albums.artistId,
-        artistName: artists.name
+        release_date: albums.releaseDate,
+        cover_path: albums.coverPath,
+        id_artist: albums.artistId,
+        artist_name: artists.name
     })
         .from(albums)
         .leftJoin(artists, eq(albums.artistId, artists.id))
@@ -116,11 +117,11 @@ export const searchAlbums = async (searchTerm: string) => {
 // 7. OBTENER ÁLBUMES POR ARTISTA
 export const getAlbumsByArtistId = async (artistId: number) => {
     return await db.select({
-        id: albums.id,
+        id_album: albums.id,
         name: albums.name,
-        releaseDate: albums.releaseDate,
-        coverPath: albums.coverPath,
-        artistName: artists.name
+        release_date: albums.releaseDate,
+        cover_path: albums.coverPath,
+        artist_name: artists.name
     })
         .from(albums)
         .leftJoin(artists, eq(albums.artistId, artists.id))
