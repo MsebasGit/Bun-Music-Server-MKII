@@ -1,7 +1,7 @@
 // src/services/artist.service.ts
 import { db } from "../db";
 import { artists } from "../db/schema";
-import { eq, like, desc } from "drizzle-orm";
+import { eq, like, desc, and } from "drizzle-orm";
 import type { NewArtist } from "../db/schema";
 import { handleDrizzleResult, handleDeleteResult } from "../utilities/validationUtils";
 
@@ -14,7 +14,7 @@ export const createArtist = async (data: NewArtist) => {
 // 2. OBTENER TODOS LOS ARTISTAS
 export const getAllArtists = async () => {
     const result = await db.select().from(artists).orderBy(desc(artists.id));
-    return handleDrizzleResult(result, "Artista", "obtener");
+    return result; // Devolvemos el array completo directamente
 };
 
 // 3. OBTENER UN ARTISTA POR ID
@@ -23,8 +23,18 @@ export const getArtistById = async (id: number) => {
     return handleDrizzleResult(result, "Artista", "obtener");
 };
 
-// 4. ACTUALIZAR UN ARTISTA
-export const updateArtist = async (id: number, data: Partial<NewArtist>) => {
+// 4. ACTUALIZAR UN ARTISTA (con autorización)
+export const updateArtist = async (id: number, data: Partial<NewArtist>, userId: number) => {
+    // Primero, verificamos que el artista que se intenta actualizar pertenece al usuario del token
+    const [artistToUpdate] = await db.select().from(artists).where(eq(artists.id, id));
+
+    if (!artistToUpdate) {
+        throw new Error("Artist not found.");
+    }
+    if (artistToUpdate.userId !== userId) {
+        throw new Error("Unauthorized: You can only update your own artist profile.");
+    }
+
     const result = await db.update(artists)
         .set(data)
         .where(eq(artists.id, id))
@@ -32,8 +42,18 @@ export const updateArtist = async (id: number, data: Partial<NewArtist>) => {
     return handleDrizzleResult(result, "Artista", "actualizar");
 };
 
-// 5. ELIMINAR UN ARTISTA
-export const deleteArtist = async (id: number) => {
+// 5. ELIMINAR UN ARTISTA (con autorización)
+export const deleteArtist = async (id: number, userId: number) => {
+    // Verificamos propiedad antes de borrar
+    const [artistToDelete] = await db.select().from(artists).where(eq(artists.id, id));
+
+    if (!artistToDelete) {
+        throw new Error("Artist not found.");
+    }
+    if (artistToDelete.userId !== userId) {
+        throw new Error("Unauthorized: You can only delete your own artist profile.");
+    }
+
     const result = await db.delete(artists).where(eq(artists.id, id)).returning();
     return handleDeleteResult(result, "Artista");
 };
@@ -69,7 +89,7 @@ export const isUserAnArtist = async (userId: number) => {
 // 9. GESTIÓN DE REDES SOCIALES (CAMPO JSON)
 // ----------------------------------------------------
 
-type SocialLink = { name: string; url: string };
+type SocialLink = { name: string; url: string; };
 
 // OBTENER REDES SOCIALES DE UN ARTISTA
 export const getSocialLinks = async (artistId: number) => {

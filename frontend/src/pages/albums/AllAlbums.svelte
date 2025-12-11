@@ -3,7 +3,7 @@
     import { Spinner, Heading } from "flowbite-svelte";
     import { albumApi } from "../../services/apiClient";
     import type { Album } from "../../types/api";
-    import AlbumGrid from "../../components/AlbumGrid.svelte";
+    import AlbumGrid from "../../components/album/AlbumGrid.svelte";
 
     let albums: Album[] = [];
     let loading: boolean = true;

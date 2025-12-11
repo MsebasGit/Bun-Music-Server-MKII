@@ -1,8 +1,8 @@
 <script lang="ts">
-    import type { Playlist } from "../types/api";
+    import type { Playlist } from "../../types/api";
     import { Listgroup, ListgroupItem, Card, Popover, Button, Modal } from "flowbite-svelte";
     import { TrashBinSolid, EditSolid, DotsVerticalOutline } from "flowbite-svelte-icons";
-    import { playlistApi } from "../services/apiClient"; // Import apiClient directly
+    import { playlistApi } from "../../services/apiClient"; // Import apiClient directly
     import EditPlaylist from "./EditPlaylist.svelte"; // Import the new component
 
     import { createEventDispatcher } from "svelte";

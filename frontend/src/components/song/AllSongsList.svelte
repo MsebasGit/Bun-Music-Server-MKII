@@ -1,7 +1,7 @@
 <script lang="ts">
     import { onMount } from 'svelte';
-    import { songApi } from '../services/apiClient';
-    import type { Song } from '../types/api';
+    import { songApi } from '../../services/apiClient';
+    import type { Song } from '../../types/api';
     import { Spinner, Alert, Card, Heading } from 'flowbite-svelte';
 
     export let currentSongId: number;

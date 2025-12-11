@@ -1,6 +1,6 @@
 <script lang="ts">
-    import { playlistApi } from "../services/apiClient";
-    import type { Playlist } from "../types/api";
+    import { playlistApi } from "../../services/apiClient";
+    import type { Playlist } from "../../types/api";
     import { createEventDispatcher } from "svelte";
     const dispatch = createEventDispatcher();
 

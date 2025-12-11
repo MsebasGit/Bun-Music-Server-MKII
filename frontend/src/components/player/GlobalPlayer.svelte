@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { playerStore } from "../stores/playerStore";
+  import { playerStore } from "../../stores/playerStore";
   import { Footer, Button, Range, Avatar, Tooltip } from "flowbite-svelte";
   import {
     Play,

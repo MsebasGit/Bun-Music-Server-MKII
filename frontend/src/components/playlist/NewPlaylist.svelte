@@ -1,7 +1,7 @@
 <script lang="ts">
-    import { playlistApi } from "../services/apiClient";
+    import { playlistApi } from "../../services/apiClient";
     import { Heading, Label, Input, Button, Alert, Spinner } from "flowbite-svelte";
-    import type { Playlist } from "../types/api";
+    import type { Playlist } from "../../types/api";
 
     export let onCreated: (newPlaylist: Playlist) => void;
     export let onClose: () => void;

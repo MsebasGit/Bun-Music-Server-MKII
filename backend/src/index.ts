@@ -6,6 +6,8 @@ import { authRoutes } from "./routes/auth.routes";
 import { playlistRoutes } from "./routes/playlist.routes";
 import { albumRoutes } from "./routes/album.routes";
 import { songRoutes } from "./routes/songs.routes";
+import { artistSongRoutes } from "./routes/artistSong.routes";
+import { artistRoutes } from "./routes/artist.routes";
 
 
 // DEBUG: Esto nos dirá exactamente dónde cree Bun que está
@@ -29,6 +31,8 @@ const app = new Elysia()
       .use(playlistRoutes)
       .use(albumRoutes)
       .use(songRoutes)
+      .use(artistRoutes)
+      .use(artistSongRoutes)
   )
   .get("/", () => "Welcome to Music Server API!")
   .listen(3000);

@@ -3,8 +3,8 @@
     import { Spinner, Heading, Button, Popover } from "flowbite-svelte";
     import { playlistApi } from "../../services/apiClient";
     import type { Playlist } from "../../types/api";
-    import PlaylistGrid from "../../components/PlaylistGrid.svelte";
-    import NewPlaylist from "../../components/NewPlaylist.svelte";
+    import PlaylistGrid from "../../components/playlist/PlaylistGrid.svelte";
+    import NewPlaylist from "../../components/playlist/NewPlaylist.svelte";
 
     let playlists: Playlist[] = [];
     let loading: boolean = true;

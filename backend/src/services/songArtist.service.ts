@@ -4,30 +4,32 @@ import { songsToArtists, songs, artists } from "../db/schema";
 import { eq, and, notInArray } from "drizzle-orm";
 
 /**
- * Asigna un artista a una canción.
- */
-export const addArtistToSong = async (songId: number, artistId: number) => {
-    const result = await db.insert(songsToArtists)
-        .values({ songId, artistId })
-        .returning();
-    if (result.length === 0) {
-        throw new Error("No se pudo asignar el artista a la canción.");
-    }
-    return { message: "Artista asignado correctamente." };
-};
-
-/**
  * Obtiene todas las canciones de un artista específico.
  */
 export const getSongsByArtistId = async (artistId: number) => {
-    return await db.select({
-        id: songs.id,
+    const songsData = await db.select({
+        id_song: songs.id,
         title: songs.title,
-        // ... otros campos de 'songs'
+        language: songs.language,
+        release_date: songs.releaseDate,
+        duration: songs.duration,
+        song_path: songs.songPath,
+        cover_path: songs.coverPath,
+        id_album: songs.albumId,
+        genres: songs.genres, // This is a JSON array
     })
     .from(songs)
     .innerJoin(songsToArtists, eq(songs.id, songsToArtists.songId))
     .where(eq(songsToArtists.artistId, artistId));
+
+    // Process the result to match the frontend's expected 'Song' type
+    return songsData.map(song => {
+        const { genres, ...restOfSong } = song;
+        return {
+            ...restOfSong,
+            genre: (genres && Array.isArray(genres) && genres.length > 0) ? genres[0] : '',
+        };
+    });
 };
 
 /**

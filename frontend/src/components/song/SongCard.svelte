@@ -1,10 +1,10 @@
 <script lang="ts">
-    import type { Song, Playlist } from "../types/api";
+    import type { Song, Playlist } from "../../types/api";
     import { Card, Popover, Button } from "flowbite-svelte";
     import { PlayCircle, PauseCircle, Heart, Bookmark } from "svelte-heros-v2";
 
-    import { playerStore } from "../stores/playerStore";
-    import { likedSongsStore } from "../stores/likesStore";
+    import { playerStore } from "../../stores/playerStore";
+    import { likedSongsStore } from "../../stores/likesStore";
 
     export let song: Song;
     export let playlists: Playlist[];

@@ -1,5 +1,5 @@
 <script lang="ts">
-    import type { Artist } from "../types/api";
+    import type { Artist } from "../../types/api";
     import { Card } from "flowbite-svelte";
 
     export let artists: Artist[] = [];
@@ -15,7 +15,7 @@
     >
         {#each artists as artist (artist.id)}
             <Card
-                href={`/artists/${artist.id}`}
+                href={`/artists/${artist.id}/songs`}
                 class="p-4 flex flex-col justify-between h-full bg-white dark:bg-gray-800 shadow-md hover:shadow-lg transition-shadow duration-300"
             >
                 <div>

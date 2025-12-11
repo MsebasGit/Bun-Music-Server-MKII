@@ -132,6 +132,9 @@ export const songApi = {
   getById: async (id: number): Promise<ApiResponse<Song>> => {
     return apiClientCall(axiosInstance.get<Song>(`/api/v1/songs/${id}`));
   },
+  getByArtistId: async (artistId: number): Promise<ApiResponse<Song[]>> => {
+    return apiClientCall(axiosInstance.get<Song[]>(`/api/v1/artists/${artistId}/songs`));
+  },
   search: async (searchTerm: string): Promise<ApiResponse<Song[]>> => {
     return apiClientCall(axiosInstance.get<Song[]>(`/songs/search?term=${encodeURIComponent(searchTerm)}`));
   },
@@ -194,24 +197,6 @@ export const artistApi = {
   },
   delete: async (id: number): Promise<ApiResponse<void>> => {
     return apiClientCall(axiosInstance.delete<void>(`/artists/${id}`));
-  },
-};
-
-export const commentApi = {
-  getBySongId: async (songId: number): Promise<ApiResponse<Comment[]>> => {
-    return apiClientCall(axiosInstance.get<Comment[]>(`/api/v1/songs/${songId}/comments`));
-  },
-  getById: async (id: number): Promise<ApiResponse<Comment>> => {
-    return apiClientCall(axiosInstance.get<Comment>(`/api/v1/comments/${id}`));
-  },
-  create: async (newComment: Omit<Comment, 'id_comment' | 'creation_date' | 'modification_date' | 'username'>): Promise<ApiResponse<Comment>> => {
-    return apiClientCall(axiosInstance.post<Comment>('/comments', newComment));
-  },
-  update: async (id: number, updatedComment: Omit<Comment, 'id_comment' | 'creation_date' | 'modification_date' | 'id_song' | 'id_user' | 'username'>): Promise<ApiResponse<void>> => {
-    return apiClientCall(axiosInstance.put<void>(`/comments/${id}`, updatedComment));
-  },
-  delete: async (id: number): Promise<ApiResponse<void>> => {
-    return apiClientCall(axiosInstance.delete<void>(`/comments/${id}`));
   },
 };
 

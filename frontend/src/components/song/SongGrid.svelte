@@ -1,7 +1,7 @@
 <script lang="ts">
-    import type { Song, Playlist } from "../types/api";
+    import type { Song, Playlist } from "../../types/api";
     import { onMount } from "svelte";
-    import { playlistApi } from "../services/apiClient";
+    import { playlistApi } from "../../services/apiClient";
     import SongCard from "./SongCard.svelte"; // Import the new component
 
     export let songs: Song[] = [];
