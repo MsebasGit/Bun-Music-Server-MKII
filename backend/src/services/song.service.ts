@@ -170,6 +170,6 @@ export const searchSongs = async (searchTerm: string) => {
 
 // 7. OBTENER CANCIONES POR ÁLBUM
 export const getSongsByAlbumId = async (albumId: number) => {
-    return await db.select().from(songs).where(eq(songs.albumId, albumId));
+    const query = getSongsWithDetailsQuery();
+    return await query.where(eq(songs.albumId, albumId));
 };
-

@@ -15,21 +15,25 @@ const axiosInstance: AxiosInstance = axios.create({
 // Esto se ejecuta ANTES de cada petición.
 axiosInstance.interceptors.request.use(
   (config) => {
-    // 1. Intentamos obtener el token del localStorage
+    // 1. Get token from localStorage
     const token = localStorage.getItem('jwt_token');
     
-    console.log("Adding Authorization header with token:", token);
-
-    // 2. Si existe el token, lo añadimos a la cabecera 'Authorization'
+    // 2. Add Authorization header if token exists
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+
+    // 3. If the request data is FormData, let the browser set the Content-Type
+    // This is crucial for file uploads to work correctly.
+    if (config.data instanceof FormData) {
+      delete config.headers['Content-Type'];
+    }
     
-    // 3. Devolvemos la configuración modificada para que la petición continúe
+    // 4. Return the modified config
     return config;
   },
   (error) => {
-    // Manejar errores en la configuración de la petición
+    // Handle request setup errors
     return Promise.reject(error);
   }
 );
@@ -132,7 +136,9 @@ export const songApi = {
   getFavorites: async (): Promise<ApiResponse<Song[]>> => {
     return apiClientCall(axiosInstance.get<Song[]>('/api/v1/songs/favorites'));
   },
-  
+  getMe: async (): Promise<ApiResponse<Song[]>> => {
+    return apiClientCall(axiosInstance.get<Song[]>('/api/v1/songs/me'));
+  },
   getById: async (id: number): Promise<ApiResponse<Song>> => {
     return apiClientCall(axiosInstance.get<Song>(`/api/v1/songs/${id}`));
   },
@@ -146,14 +152,13 @@ export const songApi = {
     return apiClientCall(axiosInstance.get<Song[]>(`/api/v1/ratings/me/search?term=${encodeURIComponent(searchTerm)}`));
   },
   create: async (formData: FormData): Promise<ApiResponse<number>> => {
-    return apiClientCall(axiosInstance.post<number>('/api/v1/songs', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    }));
+    return apiClientCall(axiosInstance.post<number>('/api/v1/songs', formData));
   },
   update: async (id: number, updatedSong: Omit<Song, 'id_song' | 'release_date' | 'album_name' | 'artist_ids' | 'artist_names'>): Promise<ApiResponse<void>> => {
-    return apiClientCall(axiosInstance.put<void>(`/songs/${id}`, updatedSong));
+    return apiClientCall(axiosInstance.put<void>(`/api/v1/songs/${id}`, updatedSong));
+  },
+  updateCover: async (id: number, formData: FormData): Promise<ApiResponse<void>> => {
+    return apiClientCall(axiosInstance.put<void>(`/api/v1/songs/${id}`, formData));
   },
   delete: async (id: number): Promise<ApiResponse<void>> => {
     return apiClientCall(axiosInstance.delete<void>(`/songs/${id}`));
@@ -177,14 +182,13 @@ export const albumApi = {
     return apiClientCall(axiosInstance.get<Album[]>(`/api/v1/artists/${artistId}/albums`));
   },
   create: async (formData: FormData): Promise<ApiResponse<Album>> => {
-    return apiClientCall(axiosInstance.post<Album>('/api/v1/albums', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    }));
+    return apiClientCall(axiosInstance.post<Album>('/api/v1/albums', formData));
   },
   update: async (id: number, updatedAlbum: Omit<Album, 'id_album' | 'release_date' | 'artist_name'>): Promise<ApiResponse<void>> => {
-    return apiClientCall(axiosInstance.put<void>(`/albums/${id}`, updatedAlbum));
+    return apiClientCall(axiosInstance.put<void>(`/api/v1/albums/${id}`, updatedAlbum));
+  },
+  updateCover: async (id: number, formData: FormData): Promise<ApiResponse<void>> => {
+    return apiClientCall(axiosInstance.post<void>(`/api/v1/albums/${id}/cover`, formData));
   },
   delete: async (id: number): Promise<ApiResponse<void>> => {
     return apiClientCall(axiosInstance.delete<void>(`/albums/${id}`));
@@ -204,7 +208,7 @@ export const artistApi = {
   search: async (searchTerm: string): Promise<ApiResponse<Artist[]>> => {
     return apiClientCall(axiosInstance.get<Artist[]>(`/api/v1/artists/search?term=${encodeURIComponent(searchTerm)}`));
   },
-  create: async (newArtist: Omit<Artist, 'id' | 'debutDate' | 'socialLinks'>): Promise<ApiResponse<Artist>> => {
+  create: async (newArtist: Omit<Artist, 'id' | 'debutDate'>): Promise<ApiResponse<Artist>> => {
     return apiClientCall(axiosInstance.post<Artist>('/api/v1/artists', newArtist));
   },
   update: async (id: number, updatedArtist: Omit<Artist, 'id' | 'debutDate'>): Promise<ApiResponse<Artist>> => {

@@ -37,7 +37,10 @@
             formData.append("title", title);
             formData.append("language", language);
             // Send genres as a JSON string array
-            formData.append("genres", JSON.stringify(parsedGenres));
+            // Append each genre as a separate field
+            parsedGenres.forEach(genre => {
+                formData.append("genres", genre);
+            });
             formData.append("artistId", user.id_artist.toString());
             
             // Append files

@@ -119,6 +119,7 @@
     {/if}
 </div>
 
+
 {#if user}
     <!-- Modal for becoming an artist -->
     <Modal bind:open={showArtistModal} size="md" outsideclose>

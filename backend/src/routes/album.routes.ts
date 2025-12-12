@@ -9,7 +9,7 @@ import {
   handleSearchAlbums,
 } from '../controllers/album.controller';
 import { authGuard } from '../guards/auth.guard';
-
+import {handleSongsByAlbumId} from '../controllers/song.controller'
 export const albumRoutes = new Elysia({ prefix: '/albums' })
 
   // --- Protected Routes ---
@@ -17,6 +17,7 @@ export const albumRoutes = new Elysia({ prefix: '/albums' })
     beforeHandle: authGuard
   }, (app) => app
     .get('/', handleGetAlbums)
+    .get('/:id/songs', handleSongsByAlbumId)
     .get('/search', handleSearchAlbums) // e.g., /api/v1/albums/search?q=name
     .get('/:id', handleGetAlbumById)
 
@@ -31,9 +32,9 @@ export const albumRoutes = new Elysia({ prefix: '/albums' })
     .put('/:id', handleUpdateAlbum, {
       body: t.Object({
         name: t.String({ minLength: 1 }),
-        cover_image: t.File({
+        cover_image: t.Optional(t.File({
           type: ['image/jpeg', 'image/png', 'image/webp']
-        }),
+        })),
       })
     })
     .delete('/:id', handleDeleteAlbum)

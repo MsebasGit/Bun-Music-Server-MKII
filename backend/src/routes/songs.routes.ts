@@ -41,10 +41,10 @@ export const songRoutes = new Elysia({ prefix: "/songs" })
         
         .put("/:_id", handleUpdateSong, {
           body: t.Object({
-            title: t.String(),
-            cover_image: t.File({
+            title: t.Optional(t.String()),
+            cover_image: t.Optional(t.File({
               type: ['image/jpeg', 'image/png', 'image/webp']
-            }),
+            })),
             albumId: t.Optional(t.String()),
             language: t.Optional(t.String()),
             genres: t.Optional(t.Array(t.String()))
@@ -52,3 +52,4 @@ export const songRoutes = new Elysia({ prefix: "/songs" })
         })
         .delete("/:_id", handleDeleteSong )
   );
+

@@ -5,7 +5,8 @@ import {
     createSong,
     updateSong,
     deleteSong,
-    searchSongs
+    searchSongs,
+    getSongsByAlbumId
 } from '../services/song.service';
 import { getLikedSongsByUser } from '../services/userSongRating.service'
 import { handleRequest } from '../utilities/controllerUtils';
@@ -84,3 +85,7 @@ export const handleSearchSongs = (context: Context) =>
         const term = new URL(context.request.url).searchParams.get('term') || '';
         return searchSongs(term);
     }, context);
+
+export const handleSongsByAlbumId = (context: Context) => {
+    return handleRequest(() => getSongsByAlbumId(Number(context.params.id)), context);
+}

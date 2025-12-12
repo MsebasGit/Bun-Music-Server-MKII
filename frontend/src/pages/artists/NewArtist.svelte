@@ -29,7 +29,7 @@
                 nationality,
                 biography,
                 userId: user.id_user,
-                socialLinks: null // As established previously, this is handled separately
+                socialLinks: [] // As established previously, this is handled separately
             };
 
             const response = await artistApi.create(newArtistPayload);
