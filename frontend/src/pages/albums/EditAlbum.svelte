@@ -34,7 +34,6 @@
             if (name !== album.name) {
                 const albumDetails = { name };
                 const response = await albumApi.update(album.id_album, albumDetails);
-
                 if (!response.success) {
                     throw new Error(response.error || "Error al actualizar los detalles del álbum.");
                 }
@@ -43,8 +42,8 @@
             // 2. If there's a new cover image, upload it separately
             if (coverImageFiles && coverImageFiles.length > 0) {
                 const formData = new FormData();
+                formData.append("name", name)
                 formData.append("cover_image", coverImageFiles[0]);
-                
                 const coverResponse = await albumApi.updateCover(album.id_album, formData);
                 if (!coverResponse.success) {
                     throw new Error(coverResponse.error || "Error al actualizar la portada.");

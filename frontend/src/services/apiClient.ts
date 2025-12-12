@@ -116,7 +116,7 @@ export const playlistApi = {
     return apiClientCall(axiosInstance.post<void>(`/api/v1/playlists/${playlistId}/songs`, { songId: songId }));
   },
   removeSong: async (playlistId: number, songId: number): Promise<ApiResponse<void>> => {
-    return apiClientCall(axiosInstance.delete<void>(`/playlists/${playlistId}/songs/${songId}`));
+    return apiClientCall(axiosInstance.delete<void>(`/api/v1/playlists/${playlistId}/songs/${songId}`));
   },
   search: async (searchTerm: string): Promise<ApiResponse<Playlist[]>> => {
     return apiClientCall(axiosInstance.get<Playlist[]>(`/api/v1/playlists/search?term=${encodeURIComponent(searchTerm)}`));
@@ -188,7 +188,8 @@ export const albumApi = {
     return apiClientCall(axiosInstance.put<void>(`/api/v1/albums/${id}`, updatedAlbum));
   },
   updateCover: async (id: number, formData: FormData): Promise<ApiResponse<void>> => {
-    return apiClientCall(axiosInstance.post<void>(`/api/v1/albums/${id}/cover`, formData));
+    console.log(await apiClientCall(axiosInstance.put<void>(`/api/v1/albums/${id}`, formData)))
+    return apiClientCall(axiosInstance.put<void>(`/api/v1/albums/${id}`, formData));
   },
   delete: async (id: number): Promise<ApiResponse<void>> => {
     return apiClientCall(axiosInstance.delete<void>(`/albums/${id}`));

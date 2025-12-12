@@ -1,6 +1,6 @@
 <script lang="ts">
     import type { Song, Playlist } from "../../types/api";
-    import { Popover, Button, Heading} from "flowbite-svelte";
+    import { Popover, Button, Heading, Dropdown, Checkbox } from "flowbite-svelte";
     import { PlayCircle, PauseCircle, Heart, Bookmark } from "svelte-heros-v2";
     import { playlistApi } from "../../services/apiClient";
     import ImageCard from "../ui/ImageCard.svelte";
@@ -12,21 +12,36 @@
     export let song: Song;
     export let playlistContext: Song[] = [];
 
-    let playlists: Playlist[] = [];
+    // Extendemos el tipo Playlist para manejar el estado del checkbox
+    type PlaylistWithSongStatus = Playlist & { hasSong: boolean };
+
+    let playlistsWithStatus: PlaylistWithSongStatus[] = [];
     let isLiking: boolean = false;
     let error: string | null = null;
+    let isLoadingPlaylists = true;
 
     // Usamos el prefijo $ para acceder al valor del store de forma reactiva
     $: isPlaying = $playerStore.currentSong?.id_song === song.id_song && $playerStore.isPlaying;
     $: hasLike = $likedSongsStore.has(song.id_song);
 
     onMount(async () => {
-        const result = await playlistApi.getPlaylistsWhereSongNotExist(song.id_song);
-        if (result.success && result.data) {
-            playlists = result.data;
+        // 1. Obtener todas las playlists del usuario
+        const allPlaylistsResult = await playlistApi.getMe();
+        // 2. Obtener las playlists donde la canción NO existe
+        const notInPlaylistsResult = await playlistApi.getPlaylistsWhereSongNotExist(song.id_song);
+
+        if (allPlaylistsResult.success && allPlaylistsResult.data && notInPlaylistsResult.success && notInPlaylistsResult.data) {
+            const notInIds = new Set(notInPlaylistsResult.data.map(p => p.id));
+            
+            // 3. Cruzar la información
+            playlistsWithStatus = allPlaylistsResult.data.map(p => ({
+                ...p,
+                hasSong: !notInIds.has(p.id)
+            }));
         } else {
-            error = result.error || "Failed to fetch playlists";
+            error = allPlaylistsResult.error || notInPlaylistsResult.error || "Failed to fetch playlists";
         }
+        isLoadingPlaylists = false;
     });
 
     // --- MANEJADORES DE ACCIONES ---
@@ -45,15 +60,38 @@
         isLiking = true;
         await likedSongsStore.toggleLike(song.id_song);
         isLiking = false;
-        
     }
 
-    async function handleAddToPlaylist(e: MouseEvent, playlistId: number) {
-        e.stopPropagation();
+    async function handleAddToPlaylist(playlistId: number) {
         const result = await playlistApi.addSong(playlistId, song.id_song);
         if (result.success) {
-            alert(`Canción añadida!`);
-            playlists = playlists.filter(p => p.id !== playlistId);
+            // Actualizar estado localmente
+            const playlist = playlistsWithStatus.find(p => p.id === playlistId);
+            if (playlist) playlist.hasSong = true;
+            playlistsWithStatus = [...playlistsWithStatus]; // Forzar reactividad
+        } else {
+            alert(`Error al añadir la canción: ${result.error}`);
+        }
+    }
+
+    async function handleRemoveFromPlaylist(playlistId: number) {
+        const result = await playlistApi.removeSong(playlistId, song.id_song);
+        if (result.success) {
+            // Actualizar estado localmente
+            const playlist = playlistsWithStatus.find(p => p.id === playlistId);
+            if (playlist) playlist.hasSong = false;
+            playlistsWithStatus = [...playlistsWithStatus]; // Forzar reactividad
+        } else {
+            alert(`Error al quitar la canción: ${result.error}`);
+        }
+    }
+
+    function handleCheckboxChange(e: Event, playlist: PlaylistWithSongStatus) {
+        const isChecked = (e.currentTarget as HTMLInputElement).checked;
+        if (isChecked) {
+            handleAddToPlaylist(playlist.id);
+        } else {
+            handleRemoveFromPlaylist(playlist.id);
         }
     }
 </script>
@@ -90,30 +128,31 @@
         >
             <Bookmark class="w-6 h-6" />
         </Button>
+        
+        <!-- Usamos Dropdown en lugar de Popover -->
+        <Dropdown class="w-48 p-3 space-y-2 text-sm" placement="bottom-end">
 
-        <Popover trigger="click" class="w-48 text-sm" placement="bottom-end">
-            <div class="p-2">
-                <h6 class="font-semibold mb-2">Añadir a...</h6>
-                {#if playlists && playlists.length > 0}
-                    <ul class="space-y-1 max-h-40 overflow-y-auto">
-                        {#each playlists as playlist}
-                            <li>
-                                <button
-                                    onclick={(e) => handleAddToPlaylist(e, playlist.id)}
-                                    class="w-full text-left p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-600"
-                                >
-                                    {playlist.name}
-                                </button>
-                            </li>
-                        {/each}
-                    </ul>
-                {:else if error}
-                    <p class="text-xs text-gray-500">{error}</p>
-                {:else}
-                    <p class="text-xs text-gray-500">Cargando...</p>
-                {/if}
-            </div>
-        </Popover>
+            <Heading tag=h6 class="font-semibold mb-2">Guardar en...</Heading>
+            {#if isLoadingPlaylists}
+                <p class="text-xs text-gray-500 px-2">Cargando...</p>
+            {:else if playlistsWithStatus && playlistsWithStatus.length > 0}
+                <div class="max-h-40 overflow-y-auto">
+                    {#each playlistsWithStatus as playlist}
+                        <Checkbox
+                            checked={playlist.hasSong}
+                            onchange={(e) => handleCheckboxChange(e, playlist)}
+                        >
+                            {playlist.name}
+                        </Checkbox>
+                    {/each}
+                </div>
+            {:else if error}
+                <p class="text-xs text-red-500 px-2">{error}</p>
+            {:else}
+                <p class="text-xs text-gray-500 px-2">No tienes playlists. ¡Crea una!</p>
+            {/if}
+        </Dropdown>
+
     </svelte:fragment>
 
     <div class="text-center">

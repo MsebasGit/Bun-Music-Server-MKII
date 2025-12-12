@@ -42,7 +42,6 @@ export const handleGetAlbumById = (context: Context) =>
 export const handleUpdateAlbum = (context: Context) => {
   const artistId = (context as any).artist?.id;
   const albumId = Number(context.params.id);
-
   if (!artistId) {
     context.set.status = 403; // Forbidden
     return { message: "Operation failed", error: "Only the artist of the album can update it." };
