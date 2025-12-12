@@ -10,7 +10,7 @@ export const users = sqliteTable("users", {
   password: text("password").notNull(),
   creationDate: text("creation_date").default(sql`(strftime('%Y-%m-%d %H:%M:%S', 'now'))`),
   email: text("email").notNull().unique(),
-  preferences: text("preferences"), // Para almacenar un objeto JSON como texto
+  preferences: text("preferences", { mode: 'json' }), // Para almacenar un objeto JSON como texto
 });
 
 export const artists = sqliteTable("artists", {
@@ -20,7 +20,7 @@ export const artists = sqliteTable("artists", {
   biography: text("biography"),
   debutDate: text("debut_date"),
   userId: integer("id_user").references(() => users.id, { onDelete: 'set null' }).unique(),
-  socialLinks: text("social_links"), // JSON como texto
+  socialLinks: text("social_links", { mode: 'json' }), // JSON como texto
 });
 
 export const albums = sqliteTable("albums", {
@@ -40,8 +40,8 @@ export const songs = sqliteTable("songs", {
   songPath: text("song_path").notNull().unique(),
   coverPath: text("cover_path"),
   albumId: integer("id_album").references(() => albums.id, { onDelete: 'set null' }),
-  genres: text("genres"), // JSON como texto
-  metadata: text("metadata"), // JSON como texto
+  genres: text("genres", { mode: 'json' }), // JSON como texto
+  metadata: text("metadata", { mode: 'json' }), // JSON como texto
 });
 
 export const playlists = sqliteTable("playlists", {
@@ -52,7 +52,6 @@ export const playlists = sqliteTable("playlists", {
   creationDate: text("creation_date").default(sql`(strftime('%Y-%m-%d %H:%M:%S', 'now'))`),
   userId: integer("id_user").references(() => users.id, { onDelete: 'set null' }),
 });
-
 
 // -- TABLAS DE RELACIONES (Muchos a Muchos) --
 
@@ -83,7 +82,10 @@ export const userSongRatings = sqliteTable("user_song_ratings", {
 // -- DEFINICIÓN DE TIPOS --
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
+export type NewArtist = typeof artists.$inferInsert;
 export type NewAlbum = typeof albums.$inferInsert;
 export type Playlist = typeof playlists.$inferSelect;
 export type NewPlaylist = typeof playlists.$inferInsert;
+export type NewSong = typeof songs.$inferInsert;
+export type Song = typeof songs.$inferSelect
 // (Puedes añadir más tipos para las otras tablas si los necesitas)

@@ -1,7 +1,8 @@
 // src/routes/auth.routes.ts
 import { Elysia, t } from "elysia";
 import { jwt } from "@elysiajs/jwt";
-import { registerController, loginController } from "../controllers/auth.controller";
+import { registerController, loginController, handleAuthStatus } from "../controllers/auth.controller";
+import { authGuard } from "../guards/auth.guard";
 
 export const authRoutes = new Elysia({ prefix: "/auth" })
   .use(
@@ -11,7 +12,7 @@ export const authRoutes = new Elysia({ prefix: "/auth" })
       exp: "7d",
     })
   )
-  // La ruta solo define el path, el handler del controlador, y la validación del body.
+  // --- Rutas Públicas ---
   .post("/register", registerController, {
     body: t.Object({
       name: t.String(),
@@ -19,10 +20,16 @@ export const authRoutes = new Elysia({ prefix: "/auth" })
       password: t.String({ minLength: 8 }),
     }),
   })
-  // Igual para el login.
   .post("/login", loginController, {
     body: t.Object({
       email: t.String({ format: "email" }),
       password: t.String(),
     }),
-  });
+  })
+
+  // --- Rutas Protegidas ---
+  .guard({
+      beforeHandle: authGuard 
+    },
+    (app) => app.get("/status", handleAuthStatus)
+  );

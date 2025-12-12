@@ -1,87 +1,77 @@
 import { writable } from 'svelte/store';
-import type { Song } from '../types/api';
 
-/**
- * Interface for the state of our global player.
- */
+// Definimos la estructura básica
 interface PlayerState {
-  currentSong: Song | null;
   isPlaying: boolean;
-  currentTime: number;
-  duration: number;
+  currentSong: any | null; // Tu tipo Song
+  queue: any[];            // <--- ESTA ES LA CLAVE: La lista de contexto actual
+  currentIndex: number;
   volume: number;
+  duration: number;
+  currentTime: number;
 }
 
-const initialPlayerState: PlayerState = {
-  currentSong: null,
+const initialState: PlayerState = {
   isPlaying: false,
-  currentTime: 0,
+  currentSong: null,
+  queue: [], 
+  currentIndex: -1,
+  volume: 1,
   duration: 0,
-  volume: 0.75,
+  currentTime: 0
 };
 
-const { subscribe, set, update } = writable<PlayerState>(initialPlayerState);
+function createPlayerStore() {
+  const { subscribe, update, set } = writable(initialState);
 
-/**
- * Custom Svelte store with actions to control the music player.
- */
-export const playerStore = {
-  subscribe,
-  set,
-  update,
+  return {
+    subscribe,
+    setVolume: (v: number) => update(s => ({ ...s, volume: v })),
+    
+    // ACCIÓN MAESTRA: Play con Contexto
+    // Cuando haces click en una canción en la UI, pasas la canción Y la lista donde está
+    playContext: (song: any, contextList: any[]) => {
+      const index = contextList.findIndex(s => s.id_song === song.id_song);
+      update(s => ({
+        ...s,
+        isPlaying: true,
+        currentSong: song,
+        queue: contextList, // Guardamos el contexto actual (Home, Playlist, etc)
+        currentIndex: index
+      }));
+    },
 
-  /**
-   * Plays a new song or toggles play/pause for the current song.
-   * @param song - The song to play. If null, toggles the current song.
-   */
-  playSong: (song: Song) => {
-    update(state => {
-      // If it's the same song, just toggle play/pause
-      if (state.currentSong?.id_song === song.id_song) {
-        return { ...state, isPlaying: !state.isPlaying };
-      }
-      // If it's a new song, start playing it from the beginning
-      return { 
-        ...state, 
-        currentSong: song, 
-        isPlaying: true, 
-        currentTime: 0 
+    togglePlay: () => update(s => ({ ...s, isPlaying: !s.isPlaying })),
+
+    playNext: () => update(s => {
+      // Si no hay siguiente, no hacemos nada o volvemos al inicio (loop)
+      if (s.currentIndex >= s.queue.length - 1) return s; 
+      
+      const nextIndex = s.currentIndex + 1;
+      return {
+        ...s,
+        currentIndex: nextIndex,
+        currentSong: s.queue[nextIndex],
+        isPlaying: true
       };
-    });
-  },
+    }),
 
-  /**
-   * Toggles the play/pause state of the current song.
-   */
-  togglePlay: () => {
-    update(state => {
-      if (!state.currentSong) return state;
-      return { ...state, isPlaying: !state.isPlaying };
-    });
-  },
+    playPrevious: () => update(s => {
+      if (s.currentIndex <= 0) return s;
+      
+      const prevIndex = s.currentIndex - 1;
+      return {
+        ...s,
+        currentIndex: prevIndex,
+        currentSong: s.queue[prevIndex],
+        isPlaying: true
+      };
+    }),
 
-  /**
-   * Pauses the music.
-   */
-  pause: () => {
-    update(state => ({ ...state, isPlaying: false }));
-  },
+    // Helpers para actualizar tiempos desde el componente de audio
+    updateTime: (time: number) => update(s => ({ ...s, currentTime: time })),
+    setDuration: (d: number) => update(s => ({ ...s, duration: d })),
+  };
+}
 
-  /**
-   * Seeks to a specific time in the current song.
-   * @param time - The time to seek to, in seconds.
-   */
-  seek: (time: number) => {
-    update(state => ({ ...state, currentTime: time }));
-  },
-
-  /**
-   * Sets the player volume.
-   * @param volume - The volume level (0.0 to 1.0).
-   */
-  setVolume: (volume: number) => {
-    // Clamp volume between 0 and 1
-    const newVolume = Math.max(0, Math.min(1, volume));
-    update(state => ({ ...state, volume: newVolume }));
-  },
-};
+export const playerStore = createPlayerStore();

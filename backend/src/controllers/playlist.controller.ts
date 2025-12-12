@@ -1,21 +1,43 @@
-// src/controllers/playlist.controller.ts
-import { getPlaylistsByUserId, createPlaylist } from '../services/playlist.service';
+import { Context } from 'elysia';
+import { 
+  getPlaylistsByUserId, 
+  createPlaylist,
+  deletePlaylist,
+  updatePlaylist
+} from '../services/playlist.service';
 import { handleRequest } from '../utilities/controllerUtils';
 
-// Dejamos que Elysia infiera el tipo del 'context'.
-// Sabe que 'user' existe porque esta función se llama desde una ruta protegida.
-export const getMyPlaylistsController = async (context: any) => {
-  const serviceAdapter = () => {
-    const userId = context.user.userId;
-    return getPlaylistsByUserId(userId);
-  };
-  return handleRequest(serviceAdapter, { set: context.set, body: null });
-}
+// Nota sobre TypeScript: Usamos (context as any) para acceder a .user 
+// porque esa propiedad la inyecta tu plugin de autenticación (Derive).
 
-export const createPlaylistController = async (context: any) => {
-  const serviceAdapter = (body: any) => {
-    const userId = context.user.userId;
-    return createPlaylist(body, userId);
-  };
-  return handleRequest(serviceAdapter, context, 201);
-}
+// --- 1. GET MY PLAYLISTS ---
+// Extraemos userId del contexto y llamamos al servicio.
+export const handleGetMyPlaylists = (context: Context) => 
+  handleRequest(() => {
+    // Si tienes tipos personalizados para user, quita el 'as any'
+    const userId = (context as any).user.userId; 
+    return getPlaylistsByUserId(userId);
+  }, context);
+
+
+// --- 2. CREATE PLAYLIST ---
+// Aquí necesitamos mezclar el 'body' que viene de la petición
+// con el 'userId' que viene del token de seguridad.
+export const handleCreatePlaylist = (context: Context) => 
+  handleRequest((body) => 
+    createPlaylist(body, (context as any).user.userId), 
+    context, 
+    201
+  );
+
+
+// --- 3. DELETE PLAYLIST ---
+// Igual que antes: extraemos ID de la URL y ejecutamos.
+export const handleDeletePlaylist = (context: Context) => 
+  handleRequest(() => deletePlaylist(Number(context.params._id)), context);
+
+
+// --- 4. UPDATE PLAYLIST ---
+// Combinamos ID de la URL + Body.
+export const handleUpdatePlaylist = (context: Context) => 
+  handleRequest((body) => updatePlaylist(Number(context.params._id), body), context);

@@ -16,7 +16,7 @@
     UserCircleSolid
   } from "flowbite-svelte-icons";
   import { router } from "tinro";
-  import { auth } from "../stores/auth";
+  import { auth } from "../../stores/auth";
   import { get } from 'svelte/store';
 
   let isLoggedIn = get(auth);

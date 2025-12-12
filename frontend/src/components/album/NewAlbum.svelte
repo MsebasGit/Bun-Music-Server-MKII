@@ -1,22 +1,13 @@
 <script lang="ts">
-    import { playlistApi } from "../../services/apiClient";
-    import { router } from "tinro";
-    // Importamos Checkbox, Card y Spinner además de los básicos
-    import {
-        Heading,
-        Label,
-        Input,
-        Button,
-        Card,
-        Checkbox,
-        Alert,
-        Spinner,
-        DarkMode,
-    } from "flowbite-svelte";
+    import { playlistApi } from "../services/apiClient";
+    import { Heading, Label, Input, Button, Alert, Spinner } from "flowbite-svelte";
+    import type { Playlist } from "../types/api";
+
+    export let onCreated: (newPlaylist: Playlist) => void;
+    export let onClose: () => void;
 
     let name = "";
     let description = "";
-
     let isLoading = false;
     let errorMessage = "";
 
@@ -25,16 +16,14 @@
         errorMessage = "";
 
         try {
-            const newPlaylistPayload = {
-                name: name,
-                description: description,
-            };
+            const newPlaylistPayload = { name, description };
             const response = await playlistApi.create(newPlaylistPayload);
 
-            if (response.success) {
-                router.goto("/playlists");
+            if (response.success && response.data) {
+                onCreated(response.data);
+                onClose();
             } else {
-                errorMessage = response.error || "Error al crear una playlist";
+                errorMessage = response.error || "Error al crear la playlist";
             }
         } catch (error: any) {
             errorMessage = "Error de red o desconocido";
@@ -47,18 +36,18 @@
 <div>
     <Heading
         tag="h2"
-        class="text-2xl font-bold text-gray-900 dark:text-white text-center"
+        class="text-xl font-bold text-gray-900 dark:text-white text-center mb-4"
     >
         Crear Nueva Playlist
     </Heading>
 
-    <form on:submit|preventDefault={handleNewPlaylist} class="mt-8 space-y-6">
+    <form on:submit|preventDefault={handleNewPlaylist} class="space-y-4">
         <Label class="space-y-2">
             <span>Nombre</span>
             <Input
                 type="text"
                 bind:value={name}
-                placeholder="Nombre para la playlist"
+                placeholder="Mi nueva playlist"
                 required
             />
         </Label>
@@ -68,7 +57,7 @@
             <Input
                 type="text"
                 bind:value={description}
-                placeholder="Super descripción"
+                placeholder="Una buena descripción..."
             />
         </Label>
 
@@ -81,12 +70,16 @@
 
         <Button
             type="submit"
-            outline
             color="blue"
             disabled={isLoading}
             class="w-full"
         >
-            Crear playlist
+            {#if isLoading}
+                <Spinner class="mr-2" size="4" />
+                Creando...
+            {:else}
+                Crear Playlist
+            {/if}
         </Button>
     </form>
 </div>

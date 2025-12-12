@@ -1,4 +1,5 @@
 // src/utilities/fileUtils.ts
+import fs from 'fs';
 
 /**
  * Genera un nombre de archivo seguro y único (evitando conflictos y caracteres especiales).
@@ -44,11 +45,11 @@ export async function handleFileUpload(
     const cleanDir = destinationDir.replace(/^\/+/, ''); 
     const relativePath = `${cleanDir}/${filename}`;
     
-    // La ruta física completa en el servidor (ej: static/img/covers/archivo.jpg)
-    const uploadPath = `static/${relativePath}`; 
+    // La ruta física completa en el servidor (ej: public/img/covers/archivo.jpg)
+    const uploadPath = `public/${relativePath}`; 
 
     // Opcional: Asegurar que el directorio existe (recomendado)
-    // await fs.promises.mkdir(`static/${cleanDir}`, { recursive: true });
+    // await fs.promises.mkdir(`public/${cleanDir}`, { recursive: true });
 
     // 3. Guardado del archivo usando Bun.write
     // Bun.write puede aceptar arrayBuffer() o el objeto File directamente en algunas versiones
@@ -56,4 +57,33 @@ export async function handleFileUpload(
 
     // Retorna la ruta web que se usará para acceder a la imagen
     return `/${relativePath}`; 
+}
+
+
+/**
+ * Elimina un archivo del sistema de archivos.
+ * @param relativePath La ruta relativa del archivo desde la carpeta `public` (ej: /img/covers/archivo.jpg).
+ */
+export async function deleteFile(relativePath: string | null): Promise<void> {
+    if (!relativePath) {
+        console.log("No se proporcionó ruta de archivo para eliminar, omitiendo.");
+        return;
+    }
+    
+    // Construye la ruta física completa
+    const fullPath = `public${relativePath}`;
+
+    try {
+        await fs.promises.unlink(fullPath);
+        console.log(`Archivo eliminado: ${fullPath}`);
+    } catch (error: any) {
+        // Si el archivo no existe, no es un error crítico en este contexto.
+        if (error.code === 'ENOENT') {
+            console.warn(`Intento de eliminar un archivo que no existe: ${fullPath}`);
+        } else {
+            // Para otros errores, sí queremos saber qué pasó.
+            console.error(`Error al eliminar el archivo ${fullPath}:`, error);
+            throw error; // Opcional: relanzar si el llamador debe manejarlo
+        }
+    }
 }

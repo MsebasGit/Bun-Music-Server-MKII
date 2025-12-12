@@ -3,13 +3,12 @@
   import { Route } from "tinro";
 
   // Components
-  import Sidebar from "../components/Sidebar.svelte";
-  import GlobalPlayer from "../components/GlobalPlayer.svelte";
+  import Sidebar from "../components/layout/Sidebar.svelte";
+  import GlobalPlayer from "../components/player/GlobalPlayer.svelte";
   import { DarkMode } from "flowbite-svelte";
 
   // Page Views
   import Home from "../pages/Home.svelte";
-  import SongView from "../pages/songs/SongView.svelte";
 
   // General Pages
   import AllAlbums from "../pages/albums/AllAlbums.svelte";
@@ -20,10 +19,11 @@
   // Specific Pages
   import SongsInPlaylist from "../pages/playlists/SongsInPlaylist.svelte";
   import SongsInAlbum from "../pages/albums/SongsInAlbum.svelte";
-  import SongsInArtist from "../pages/artists/SongsInArtist.svelte";
-    import Admin from "../pages/studio/Admin.svelte";
-    import Login from "../pages/users/Login.svelte";
+  import Admin from "../pages/studio/Admin.svelte";
+  import Login from "../pages/users/Login.svelte";
 
+  import ArtistSongs from "../pages/artists/ArtistSongs.svelte";
+  import ArtistAlbums from "../pages/artists/ArtistAlbums.svelte";
 </script>
 
 <div class="flex h-screen bg-gray-50 dark:bg-gray-800">
@@ -34,20 +34,24 @@
       <Home />
     </Route>
 
-    <Route path="/songs/:id" let:params><SongView id={params.id} /></Route>
-
     <Route path="/albums">
       <AllAlbums />
     </Route>
 
     <Route path="/albums/:id" let:params><SongsInAlbum id={params.id} /></Route>
 
+    <!-- Artists Routes -->
     <Route path="/artists">
       <AllArtists />
     </Route>
 
-    <Route path="/artists/:id" let:params><SongsInArtist id={params.id} /></Route
-    >
+    <Route path="/artists/:id" let:params><ArtistSongs id={params.id} /></Route>
+    <Route path="/artists/:id/songs" let:params><ArtistSongs id={params.id} /></Route>
+    <Route path="/artists/:id/albums" let:params><ArtistAlbums id={params.id} /></Route>
+    <!-- Removed commented-out ArtistDescription route as page file does not exist -->
+
+
+    <!-- User Related Routes -->
 
     <Route path="/favorites">
       <AllFavorites />

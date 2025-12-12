@@ -1,7 +1,12 @@
 // src/routes/playlist.routes.ts
 import { Elysia, t } from "elysia"; // Import 't' for validation
 import { authGuard } from "../guards/auth.guard";
-import { getMyPlaylistsController, createPlaylistController } from "../controllers/playlist.controller"; // Import new controller
+import { 
+  handleCreatePlaylist, 
+  handleGetMyPlaylists,
+  handleUpdatePlaylist,
+  handleDeletePlaylist
+} from "../controllers/playlist.controller"; // Import new controller
 
 export const playlistRoutes = new Elysia({ prefix: "/playlists" })
   // Este 'guard' se aplica a todas las rutas definidas dentro de él.
@@ -12,12 +17,19 @@ export const playlistRoutes = new Elysia({ prefix: "/playlists" })
     (app) =>
       app
         // GET /api/v1/playlists/me
-        .get("/me", getMyPlaylistsController)
+        .get("/me", handleGetMyPlaylists)
         // POST /api/v1/playlists
-        .post("/", createPlaylistController, {
+        .post("/", handleCreatePlaylist, {
           body: t.Object({
             name: t.String(),
             description: t.Optional(t.String()),
           }),
         })
+        .put("/:_id", handleUpdatePlaylist, {
+          body: t.Object({
+            name: t.Optional(t.String()),
+            description: t.Optional(t.String()),
+          }),
+        })
+        .delete("/:_id", handleDeletePlaylist )
   );

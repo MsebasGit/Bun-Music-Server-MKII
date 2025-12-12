@@ -3,7 +3,7 @@
     import { Heading,Spinner } from "flowbite-svelte";
     import { songApi } from "../services/apiClient";
     import type { Song } from "../types/api";
-    import SongGrid from "../components/SongGrid.svelte";
+    import SongGrid from "../components/song/SongGrid.svelte";
 
     let songs: Song[] = [];
     let loading: boolean = true;

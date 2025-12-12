@@ -1,25 +1,145 @@
 // src/services/artist.service.ts
 import { db } from "../db";
 import { artists } from "../db/schema";
-import { eq } from "drizzle-orm";
+import { eq, like, desc, and } from "drizzle-orm";
+import type { NewArtist } from "../db/schema";
+import { handleDrizzleResult, handleDeleteResult } from "../utilities/validationUtils";
 
-/**
- * Obtiene todas las artists de un usuario específico.
- * @param userId - El ID del usuario.
- * @returns Una lista de las artists del usuario.
- */
-export const getartistsByUserId = async (userId: number) => {
+// 1. CREAR ARTISTA
+export const createArtist = async (data: NewArtist) => {
+    const result = await db.insert(artists).values(data).returning();
+    return handleDrizzleResult(result, "Artista", "crear");
+};
+
+// 2. OBTENER TODOS LOS ARTISTAS
+export const getAllArtists = async () => {
+    const result = await db.select().from(artists).orderBy(desc(artists.id));
+    return result; // Devolvemos el array completo directamente
+};
+
+// 3. OBTENER UN ARTISTA POR ID
+export const getArtistById = async (id: number) => {
+    const result = await db.select().from(artists).where(eq(artists.id, id));
+    return handleDrizzleResult(result, "Artista", "obtener");
+};
+
+// 4. ACTUALIZAR UN ARTISTA (con autorización)
+export const updateArtist = async (id: number, data: Partial<NewArtist>, userId: number) => {
+    // Primero, verificamos que el artista que se intenta actualizar pertenece al usuario del token
+    const [artistToUpdate] = await db.select().from(artists).where(eq(artists.id, id));
+
+    if (!artistToUpdate) {
+        throw new Error("Artist not found.");
+    }
+    if (artistToUpdate.userId !== userId) {
+        throw new Error("Unauthorized: You can only update your own artist profile.");
+    }
+
+    const result = await db.update(artists)
+        .set(data)
+        .where(eq(artists.id, id))
+        .returning();
+    return handleDrizzleResult(result, "Artista", "actualizar");
+};
+
+// 5. ELIMINAR UN ARTISTA (con autorización)
+export const deleteArtist = async (id: number, userId: number) => {
+    // Verificamos propiedad antes de borrar
+    const [artistToDelete] = await db.select().from(artists).where(eq(artists.id, id));
+
+    if (!artistToDelete) {
+        throw new Error("Artist not found.");
+    }
+    if (artistToDelete.userId !== userId) {
+        throw new Error("Unauthorized: You can only delete your own artist profile.");
+    }
+
+    const result = await db.delete(artists).where(eq(artists.id, id)).returning();
+    return handleDeleteResult(result, "Artista");
+};
+
+// 6. BUSCAR ARTISTAS
+export const searchArtists = async (searchTerm: string) => {
+    const searchPattern = `%${searchTerm}%`;
+    return await db.select()
+        .from(artists)
+        .where(like(artists.name, searchPattern))
+        .orderBy(desc(artists.name));
+};
+
+// 7. OBTENER ARTISTA POR USER ID
+export const getArtistByUserId = async (userId: number) => {
     if (!userId) {
         throw new Error("User ID is required");
     }
-
-    const isArtist = await db
-        .select({ id_artist: artists.id }) // Solo traemos la columna que queremos
-        .from(artists)
-        .where(eq(artists.userId, userId)) // <--- AQUÍ ESTÁ LA MAGIA
-        .limit(1); // Buena práctica si solo esperas uno
-
-    // Drizzle devuelve un array, así que tomamos el primero
-    return isArtist[0]?.id_artist ?? null;
+    const result = await db.select().from(artists).where(eq(artists.userId, userId));
+    return result.length > 0 ? result[0] : null;
 };
 
+// 8. VERIFICAR SI UN USUARIO ES ARTISTA
+export const isUserAnArtist = async (userId: number) => {
+    if (!userId) {
+        throw new Error("User ID is required");
+    }
+    const result = await db.select({ id: artists.id }).from(artists).where(eq(artists.userId, userId)).limit(1);
+    return result[0]?.id ?? null;
+};
+
+// ----------------------------------------------------
+// 9. GESTIÓN DE REDES SOCIALES (CAMPO JSON)
+// ----------------------------------------------------
+
+type SocialLink = { name: string; url: string; };
+
+// OBTENER REDES SOCIALES DE UN ARTISTA
+export const getSocialLinks = async (artistId: number) => {
+    const result = await db.select({ socialLinks: artists.socialLinks }).from(artists).where(eq(artists.id, artistId));
+    const artist = handleDrizzleResult(result, "Artista", "obtener");
+    return (artist.socialLinks || []) as SocialLink[];
+};
+
+// AÑADIR UNA RED SOCIAL
+export const addSocialLink = async (artistId: number, newLink: SocialLink) => {
+    const currentLinks = await getSocialLinks(artistId);
+    
+    if (currentLinks.find(link => link.name.toLowerCase() === newLink.name.toLowerCase())) {
+        throw new Error(`La red social '${newLink.name}' ya existe para este artista.`);
+    }
+
+    const updatedLinks = [...currentLinks, newLink];
+    
+    const result = await db.update(artists)
+        .set({ socialLinks: updatedLinks })
+        .where(eq(artists.id, artistId))
+        .returning({ socialLinks: artists.socialLinks });
+
+    return handleDrizzleResult(result, "Red social", "crear");
+};
+
+// ACTUALIZAR TODAS LAS REDES SOCIALES
+export const updateSocialLinks = async (artistId: number, links: SocialLink[]) => {
+    const result = await db.update(artists)
+        .set({ socialLinks: links })
+        .where(eq(artists.id, artistId))
+        .returning({ socialLinks: artists.socialLinks });
+    
+    return handleDrizzleResult(result, "Redes sociales", "actualizar");
+};
+
+// ELIMINAR UNA RED SOCIAL
+export const deleteSocialLink = async (artistId: number, linkName: string) => {
+    const currentLinks = await getSocialLinks(artistId);
+    
+    const updatedLinks = currentLinks.filter(link => link.name.toLowerCase() !== linkName.toLowerCase());
+
+    if (updatedLinks.length === currentLinks.length) {
+        throw new Error(`La red social '${linkName}' no fue encontrada.`);
+    }
+
+    const result = await db.update(artists)
+        .set({ socialLinks: updatedLinks })
+        .where(eq(artists.id, artistId))
+        .returning({ socialLinks: artists.socialLinks });
+        
+    return handleDeleteResult(result, "Red social");
+};

@@ -1,13 +1,14 @@
 <script lang="ts">
-    import type { Song, Playlist } from "../types/api";
+    import type { Song, Playlist } from "../../types/api";
     import { Card, Popover, Button } from "flowbite-svelte";
     import { PlayCircle, PauseCircle, Heart, Bookmark } from "svelte-heros-v2";
 
-    import { playerStore } from "../stores/playerStore";
-    import { likedSongsStore } from "../stores/likesStore";
+    import { playerStore } from "../../stores/playerStore";
+    import { likedSongsStore } from "../../stores/likesStore";
 
     export let song: Song;
     export let playlists: Playlist[];
+    export let playlistContext: Song[] = [];
 
     // --- ESTADO LOCAL Y STORES ---
     let currentPlayingId: number | null = null;
@@ -22,8 +23,19 @@
 
     // --- MANEJADORES DE ACCIONES ---
     function handlePlay(e: MouseEvent) {
+        // Evita que el click se propague al enlace o tarjeta
         e.stopPropagation();
-        playerStore.playSong(song);
+
+        // Si es la misma canción y está sonando, pausamos
+        if (
+            $playerStore.currentSong?.id_song === song.id_song &&
+            $playerStore.isPlaying
+        ) {
+            playerStore.togglePlay();
+        } else {
+            // NUEVO MÉTODO: Pasamos la canción y su contexto (la lista actual)
+            playerStore.playContext(song, playlistContext);
+        }
     }
 
     async function handleLike(e: MouseEvent) {
@@ -55,7 +67,9 @@
         class="w-full h-48 object-cover rounded-t-lg"
     />
     <!-- Contenedor de botones que aparece en hover -->
-    <div class="absolute bottom-16 left-1/2 transform -translate-x-1/2 flex items-center space-x-2 transition-opacity duration-300 opacity-0 group-hover:opacity-100">
+    <div
+        class="absolute bottom-16 left-1/2 transform -translate-x-1/2 flex items-center space-x-2 transition-opacity duration-300 opacity-0 group-hover:opacity-100"
+    >
         <!-- Botón de Like -->
         <Button
             pill
@@ -102,10 +116,7 @@
                             <li>
                                 <button
                                     on:click={(e) =>
-                                        handleAddToPlaylist(
-                                            e,
-                                            playlist.id_playlist,
-                                        )}
+                                        handleAddToPlaylist(e, playlist.id)}
                                     class="w-full text-left p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-600"
                                 >
                                     {playlist.name}

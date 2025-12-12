@@ -1,5 +1,5 @@
 <script lang="ts">
-    import type { Artist } from "../types/api";
+    import type { Artist } from "../../types/api";
     import { Card } from "flowbite-svelte";
 
     export let artists: Artist[] = [];
@@ -13,9 +13,9 @@
     <div
         class="grid grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-6"
     >
-        {#each artists as artist (artist.id_artist)}
+        {#each artists as artist (artist.id)}
             <Card
-                href={`/artists/${artist.id_artist}`}
+                href={`/artists/${artist.id}/songs`}
                 class="p-4 flex flex-col justify-between h-full bg-white dark:bg-gray-800 shadow-md hover:shadow-lg transition-shadow duration-300"
             >
                 <div>
@@ -28,6 +28,11 @@
                         class="font-normal text-gray-700 dark:text-gray-400 text-sm"
                     >
                         Nacionalidad: {artist.nationality || "Desconocida"}
+                    </p>
+                    <p
+                        class="font-normal text-gray-700 dark:text-gray-400 text-sm"
+                    >
+                        Biografía: {artist.biography || "N/A"}
                     </p>
                 </div>
             </Card>
