@@ -1,39 +1,40 @@
 <script lang="ts">
     import type { Song, Playlist } from "../../types/api";
-    import { Card, Popover, Button } from "flowbite-svelte";
+    import { Popover, Button, Heading} from "flowbite-svelte";
     import { PlayCircle, PauseCircle, Heart, Bookmark } from "svelte-heros-v2";
+    import { playlistApi } from "../../services/apiClient";
+    import ImageCard from "../ui/ImageCard.svelte";
 
     import { playerStore } from "../../stores/playerStore";
     import { likedSongsStore } from "../../stores/likesStore";
+    import { onMount } from "svelte";
 
     export let song: Song;
-    export let playlists: Playlist[];
     export let playlistContext: Song[] = [];
 
-    // --- ESTADO LOCAL Y STORES ---
-    let currentPlayingId: number | null = null;
-    let isPlaying: boolean = false;
+    let playlists: Playlist[] = [];
     let isLiking: boolean = false;
+    let error: string | null = null;
 
-    // Suscripciones a los stores para reactividad
-    playerStore.subscribe((store) => {
-        currentPlayingId = store.currentSong?.id_song ?? null;
-        isPlaying = store.isPlaying;
+    // Usamos el prefijo $ para acceder al valor del store de forma reactiva
+    $: isPlaying = $playerStore.currentSong?.id_song === song.id_song && $playerStore.isPlaying;
+    $: hasLike = $likedSongsStore.has(song.id_song);
+
+    onMount(async () => {
+        const result = await playlistApi.getPlaylistsWhereSongNotExist(song.id_song);
+        if (result.success && result.data) {
+            playlists = result.data;
+        } else {
+            error = result.error || "Failed to fetch playlists";
+        }
     });
 
     // --- MANEJADORES DE ACCIONES ---
     function handlePlay(e: MouseEvent) {
-        // Evita que el click se propague al enlace o tarjeta
         e.stopPropagation();
-
-        // Si es la misma canción y está sonando, pausamos
-        if (
-            $playerStore.currentSong?.id_song === song.id_song &&
-            $playerStore.isPlaying
-        ) {
+        if (isPlaying) {
             playerStore.togglePlay();
         } else {
-            // NUEVO MÉTODO: Pasamos la canción y su contexto (la lista actual)
             playerStore.playContext(song, playlistContext);
         }
     }
@@ -42,72 +43,55 @@
         e.stopPropagation();
         if (isLiking) return;
         isLiking = true;
-
         await likedSongsStore.toggleLike(song.id_song);
-
         isLiking = false;
+        
     }
 
     async function handleAddToPlaylist(e: MouseEvent, playlistId: number) {
         e.stopPropagation();
-        console.log(
-            `SIMULACIÓN: Añadiendo canción ${song.id_song} a playlist ${playlistId}`,
-        );
-        alert(`Canción añadida a la playlist (simulación)`);
-        // Aquí iría tu llamada a la API real:
-        // await playlistApi.addSongToPlaylist(playlistId, song.id_song);
+        const result = await playlistApi.addSong(playlistId, song.id_song);
+        if (result.success) {
+            alert(`Canción añadida!`);
+            playlists = playlists.filter(p => p.id !== playlistId);
+        }
     }
 </script>
 
-<Card class="p-0 group relative">
-    <!-- Imagen de la tarjeta -->
-    <img
-        src={song.cover_path || "/default-cover.png"}
-        alt="Cover de {song.title}"
-        class="w-full h-48 object-cover rounded-t-lg"
-    />
-    <!-- Contenedor de botones que aparece en hover -->
-    <div
-        class="absolute bottom-16 left-1/2 transform -translate-x-1/2 flex items-center space-x-2 transition-opacity duration-300 opacity-0 group-hover:opacity-100"
-    >
-        <!-- Botón de Like -->
+<ImageCard imageUrl={song.cover_path || "/default-cover.png"}>
+    <svelte:fragment slot="actions">
         <Button
             pill
-            class="!p-2 bg-black bg-opacity-50 text-white hover:bg-opacity-75 transition-all active:scale-90"
+            class="!p-2 bg-black/50 text-white hover:bg-opacity-75 transition-all active:scale-90"
             onclick={handleLike}
             disabled={isLiking}
         >
             <Heart
-                class="w-6 h-6 transition-colors {$likedSongsStore.has(
-                    song.id_song,
-                )
-                    ? 'text-red-500 fill-red-500'
-                    : ''}"
+                class="w-6 h-6 transition-colors {hasLike ? 'text-red-500 fill-red-500' : ''}"
             />
         </Button>
 
-        <!-- Botón de Reproducir/Pausa -->
         <Button
             pill
-            class="!p-2 bg-black bg-opacity-50 text-white hover:bg-opacity-75 transition-all active:scale-90"
+            class="!p-2 bg-black/50 text-white hover:bg-opacity-75 transition-all active:scale-90"
             onclick={handlePlay}
         >
-            {#if currentPlayingId === song.id_song && isPlaying}
+            {#if isPlaying}
                 <PauseCircle class="w-8 h-8 text-blue-500" />
             {:else}
                 <PlayCircle class="w-8 h-8" />
             {/if}
         </Button>
 
-        <!-- Botón de Añadir a Playlist con Popover -->
         <Button
             pill
             slot="trigger"
-            class="!p-2 bg-black bg-opacity-50 text-white hover:bg-opacity-75 transition-all active:scale-90"
+            class="!p-2 bg-black/50 text-white hover:bg-opacity-75 transition-all active:scale-90"
         >
             <Bookmark class="w-6 h-6" />
         </Button>
-        <Popover trigger="click" class="w-48 text-sm">
+
+        <Popover trigger="click" class="w-48 text-sm" placement="bottom-end">
             <div class="p-2">
                 <h6 class="font-semibold mb-2">Añadir a...</h6>
                 {#if playlists && playlists.length > 0}
@@ -115,8 +99,7 @@
                         {#each playlists as playlist}
                             <li>
                                 <button
-                                    on:click={(e) =>
-                                        handleAddToPlaylist(e, playlist.id)}
+                                    onclick={(e) => handleAddToPlaylist(e, playlist.id)}
                                     class="w-full text-left p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-600"
                                 >
                                     {playlist.name}
@@ -124,26 +107,17 @@
                             </li>
                         {/each}
                     </ul>
+                {:else if error}
+                    <p class="text-xs text-gray-500">{error}</p>
                 {:else}
-                    <p class="text-xs text-gray-500">No tienes playlists.</p>
+                    <p class="text-xs text-gray-500">Cargando...</p>
                 {/if}
             </div>
         </Popover>
-    </div>
+    </svelte:fragment>
 
-    <!-- Información de la canción -->
-    <div class="p-4">
-        <h5
-            class="mb-1 text-md font-bold tracking-tight text-gray-900 dark:text-white truncate"
-        >
-            <a href={`/songs/${song.id_song}`} class="hover:underline"
-                >{song.title}</a
-            >
-        </h5>
-        <p
-            class="font-normal text-sm text-gray-700 dark:text-gray-400 truncate"
-        >
-            {song.artist_names || "Desconocido"}
-        </p>
+    <div class="text-center">
+        <Heading tag="h5" class="mb-1 text-md font-bold truncate">{song.title}</Heading>
+        <p class="text-sm text-gray-500 truncate">{song.artist_names || "Desconocido"}</p>
     </div>
-</Card>
+</ImageCard>

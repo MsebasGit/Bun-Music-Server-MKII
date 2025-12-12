@@ -1,24 +1,32 @@
 import { Context } from 'elysia'; // Importamos el tipo para autocompletado
-import { 
-    getAllSongs, 
-    getSongById, 
-    createSong, 
-    updateSong, 
-    deleteSong, 
-    searchSongs 
+import {
+    getAllSongs,
+    getSongById,
+    createSong,
+    updateSong,
+    deleteSong,
+    searchSongs,
+    getSongsByAlbumId
 } from '../services/song.service';
+import { getLikedSongsByUser } from '../services/userSongRating.service'
 import { handleRequest } from '../utilities/controllerUtils';
 
 // --- 1. GET ALL (Wrapper simple) ---
 // Ignoramos el 'body' que envía handleRequest y llamamos a getAllSongs
-export const handleGetSongs = (context: Context) => 
+export const handleGetSongs = (context: Context) =>
     handleRequest(() => getAllSongs(), context);
 
+export const handleGetFavoritesSong = (context: Context) =>
+  handleRequest(() => {
+    // Si tienes tipos personalizados para user, quita el 'as any'
+    const userId = (context as any).user.userId; 
+    return getLikedSongsByUser(userId);
+  }, context);
 
 // --- 2. GET BY ID (Extracción de params) ---
 // Usamos el closure para capturar el ID. 
 // Nota: handleRequest pasa 'body', pero nosotros necesitamos 'params', por eso el wrapper.
-export const handleGetSongById = (context: Context) => 
+export const handleGetSongById = (context: Context) =>
     handleRequest(() => getSongById(Number(context.params._id)), context);
 
 
@@ -32,9 +40,9 @@ export const handleCreateSong = (context: Context) => {
         return { message: "Operation failed", error: "Only artists can create songs." };
     }
 
-    return handleRequest((body) => 
+    return handleRequest((body) =>
         createSong(body, artistId),
-        context, 
+        context,
         201
     );
 }
@@ -70,10 +78,14 @@ export const handleDeleteSong = (context: Context) => {
 
 // --- 6. SEARCH (Query Params) ---
 // Simplificamos la extracción del query param.
-export const handleSearchSongs = (context: Context) => 
+export const handleSearchSongs = (context: Context) =>
     handleRequest(() => {
         // En Elysia, puedes acceder a query params más fácil si usas el plugin, 
         // pero manteniendo tu lógica original de URL raw:
-        const term = new URL(context.request.url).searchParams.get('q') || '';
+        const term = new URL(context.request.url).searchParams.get('term') || '';
         return searchSongs(term);
     }, context);
+
+export const handleSongsByAlbumId = (context: Context) => {
+    return handleRequest(() => getSongsByAlbumId(Number(context.params.id)), context);
+}

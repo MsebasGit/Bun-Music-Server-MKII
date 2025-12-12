@@ -1,50 +1,64 @@
 import { writable } from 'svelte/store';
 import { userSongRatingApi } from '../services/apiClient';
 
-// --- Store ---
-// Un Set es eficiente para guardar y buscar IDs únicos.
-const { subscribe, update } = writable(new Set<number>());
-
-// --- Lógica y Helpers ---
+const { subscribe, update, set } = writable(new Set<number>());
 
 /**
- * Carga los likes iniciales del usuario desde la API.
- * Debería llamarse una vez cuando la aplicación se inicia (e.g., en App.svelte o un layout principal).
+ * Carga los likes reales del usuario desde la base de datos.
  */
 async function fetchInitialLikes() {
-    // En una app real, esto obtendría los likes del usuario logueado
-    // const result = await userSongRatingApi.getAllUserLikes(); 
-    // if (result.success) {
-    //     update(() => new Set(result.data.map(like => like.songId)));
-    // }
-    
-    // Para la demo, empezamos con un Set vacío.
-    console.log("Store de Likes inicializado.");
+    try {
+        const result = await userSongRatingApi.getLikedSongsByUser();
+        if (result.success && Array.isArray(result.data)) {
+            // Extraemos solo los IDs de las canciones que vienen de la API
+            const ids = result.data.map(song => song.id_song);
+            set(new Set(ids));
+        }
+    } catch (err) {
+        console.error("Error inicializando likesStore:", err);
+    }
 }
 
 /**
- * Alterna el estado de "like" para una canción.
- * @param songId El ID de la canción.
+ * Lógica de Toggle: Decide si dar Like o quitarlo según el estado actual.
  */
 async function toggleLike(songId: number) {
-    // Simulación de API
-    await new Promise(resolve => setTimeout(resolve, 300));
-    // En una app real: await userSongRatingApi.toggleLike(songId);
-
-    // Actualiza el store.
-    update(set => {
-        if (set.has(songId)) {
-            set.delete(songId);
-        } else {
-            set.add(songId);
-        }
-        return set;
+    let isCurrentlyLiked = false;
+    
+    // Leemos el estado actual del store
+    update(currentSet => {
+        isCurrentlyLiked = currentSet.has(songId);
+        return currentSet;
     });
+
+    let result;
+    if (isCurrentlyLiked) {
+        // El ID 0 es placeholder, tu interceptor ya envía el JWT para identificar al usuario
+        result = await userSongRatingApi.unlikeSong(songId);
+    } else {
+        result = await userSongRatingApi.likeSong(songId);
+    }
+
+    if (result.success) {
+        // Actualizamos el estado global solo si la API confirmó la operación
+        update(currentSet => {
+            const newSet = new Set(currentSet);
+            if (newSet.has(songId)) {
+                newSet.delete(songId);
+            } else {
+                newSet.add(songId);
+            }
+            return newSet;
+        });
+    } else {
+        console.error("Error en la API al procesar Like:", result.error);
+    }
 }
 
-// --- Exportación ---
 export const likedSongsStore = {
     subscribe,
     toggleLike,
     fetchInitialLikes,
+    // Helper útil para ver si una canción tiene like sin suscribirse manualmente
+    reset: () => set(new Set())
 };

@@ -5,7 +5,9 @@ import {
   handleGetSongs,
   handleCreateSong, 
   handleUpdateSong,
-  handleDeleteSong
+  handleDeleteSong,
+  handleGetFavoritesSong,
+  handleSearchSongs
 } from "../controllers/song.controller"; // Import new controller
 
 
@@ -19,6 +21,8 @@ export const songRoutes = new Elysia({ prefix: "/songs" })
     (app) =>
       app
         .get("/", handleGetSongs)
+        .get("/favorites", handleGetFavoritesSong)
+        .get("/search", handleSearchSongs)
         // POST /api/v1/songs
         .post("/", handleCreateSong, {
           body: t.Object({
@@ -37,10 +41,10 @@ export const songRoutes = new Elysia({ prefix: "/songs" })
         
         .put("/:_id", handleUpdateSong, {
           body: t.Object({
-            title: t.String(),
-            cover_image: t.File({
+            title: t.Optional(t.String()),
+            cover_image: t.Optional(t.File({
               type: ['image/jpeg', 'image/png', 'image/webp']
-            }),
+            })),
             albumId: t.Optional(t.String()),
             language: t.Optional(t.String()),
             genres: t.Optional(t.Array(t.String()))
@@ -48,3 +52,4 @@ export const songRoutes = new Elysia({ prefix: "/songs" })
         })
         .delete("/:_id", handleDeleteSong )
   );
+

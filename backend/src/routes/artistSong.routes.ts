@@ -7,6 +7,7 @@ import {
   handleGetSongsByArtistId,
   handleGetArtistsBySongId,
   handleGetArtistsWhereSongNotExist,
+  handleGetMySongsByArtist
 } from '../controllers/artistSong.controller'; 
 
 export const artistSongRoutes = new Elysia()
@@ -18,6 +19,7 @@ export const artistSongRoutes = new Elysia()
       app
         // 1. GET /api/v1/artists/:id/songs
         .get("/artists/:id/songs", handleGetSongsByArtistId)
+        .get("/songs/me", handleGetMySongsByArtist)
         // 2. GET /api/v1/songs/:id/artists
         .get("/songs/:id/artists", handleGetArtistsBySongId)
 

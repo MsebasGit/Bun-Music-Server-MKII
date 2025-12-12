@@ -1,6 +1,7 @@
 import { registerService, loginService } from '../services/auth.service';
 import { handleRequest } from '../utilities/controllerUtils';
-import { isUserAnArtist } from '../services/artist.service';
+import { isUserAnArtist, getArtistByUserId } from '../services/artist.service';
+import { getUserById } from '../services/users.service';
 
 // Dejamos que Elysia infiera los tipos del contexto
 export const registerController = (context: any) => 
@@ -33,16 +34,18 @@ export const loginController = (context: any) => {
     return handleRequest(loginService, context, 200, handleLoginSuccess);
 }
 
-export const handleAuthStatus = (context: any) => {
-    const isArtist = !!context.artist;
-    
+export const handleGetMeController = async (context: any) => {
+    const userId = context.user.userId;
+    const isArtist = context.user.isArtist;
+    const userDetails = await getUserById(userId);
+    const artistDetails = await getArtistByUserId(userId);
+    const artistId = artistDetails?.id
+
     context.set.status = 200;
     return {
-        isAuthenticated: true,
+        ...userDetails,
         isArtist: isArtist,
-        user: { 
-            userId: context.user.userId 
-        },
-        artist: context.artist || null
+        ...artistDetails,
+        id_artist: artistId
     };
-};
+}; 

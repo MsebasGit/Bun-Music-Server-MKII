@@ -5,57 +5,78 @@ import {
   getAlbumById,
   updateAlbum,
   deleteAlbum,
-} from '../services/album.service'; 
+  searchAlbums,
+  getAlbumsByArtistId,
+} from '../services/album.service';
 import { handleRequest } from '../utilities/controllerUtils';
 import { Context } from 'elysia';
-export {
-  handleCreateAlbum
-};
-
-// Corregido: Usamos 'any' para el contexto de Elysia. 
-// Esto resuelve los errores de incompatibilidad de tipos entre rutas 
-// (ya que POST espera un 'body' con File, y GET/DELETE esperan 'params' sin 'body').
 
 /**
  * 1. Crear Álbum (POST /albums)
- * Delega la lógica de validación, subida de archivos y DB al servicio.
  */
-const handleCreateAlbum = (context: Context) => 
-  handleRequest(() => {
-    const artistId = (context as any).artist.id; 
-    return createAlbum(artistId, context.body);
-  }, context);
+export const handleCreateAlbum = (context: Context) => {
+  // The artistId should be available from the auth guard
+  const artistId = (context as any).artist?.id;
+  if (!artistId) {
+    context.set.status = 403; // Forbidden
+    return { message: "Operation failed", error: "User is not an artist or not authenticated." };
+  }
+  return handleRequest(() => createAlbum(artistId, context.body), context, 201);
+}
 
 /**
  * 2. Obtener Todos los Álbumes (GET /albums)
  */
-const handleGetAlbums = (context: Context) => 
-  handleRequest(getAlbums, context, 200);
+export const handleGetAlbums = (context: Context) =>
+  handleRequest(getAlbums, context);
 
 /**
  * 3. Obtener Álbum por ID (GET /albums/:id)
  */
-const handleGetAlbumById = (context: Context) => 
-  handleRequest(getAlbumById, context, 200);
+export const handleGetAlbumById = (context: Context) =>
+  handleRequest(() => getAlbumById(Number(context.params.id)), context);
 
 /**
  * 4. Actualizar Álbum (PUT /albums/:id)
- 
-export const updateAlbumController = (context: Context) => 
-  handleRequest(updateAlbum, context, 200);
 */
+export const handleUpdateAlbum = (context: Context) => {
+  const artistId = (context as any).artist?.id;
+  const albumId = Number(context.params.id);
+
+  if (!artistId) {
+    context.set.status = 403; // Forbidden
+    return { message: "Operation failed", error: "Only the artist of the album can update it." };
+  }
+
+  return handleRequest((body) => updateAlbum(albumId, body), context);
+}
 
 /**
  * 5. Eliminar Álbum (DELETE /albums/:id)
- * Se usa un manejador de éxito personalizado para devolver un mensaje claro.
  */
-const handleDeleteAlbum = (context: Context) => {
-    // Manejador de éxito personalizado
-    const handleDeleteSuccess = (result: any, ctx: Context) => {
-        ctx.set.status = 200;
-        // La URL usa 'id', que es lo que está en ctx.params
-        return { message: `Album with ID ${ctx.params.id} deleted successfully` }; 
-    };
+export const handleDeleteAlbum = (context: Context) => {
+  const artistId = (context as any).artist?.id;
+  const albumId = Number(context.params.id);
 
-    return handleRequest(deleteAlbum, context, 200, handleDeleteSuccess);
+  if (!artistId) {
+    context.set.status = 403; // Forbidden
+    return { message: "Operation failed", error: "Only the artist of the song can delete it." };
+  }
+  return handleRequest(() => deleteAlbum(albumId), context);
 };
+
+/**
+ * 6. Buscar Álbumes (GET /albums/search)
+ */
+export const handleSearchAlbums = (context: Context) => {
+  const term = new URL(context.request.url).searchParams.get('term') || '';
+  return handleRequest(() => searchAlbums(term), context);
+}
+
+/**
+ * 7. Obtener Álbumes por Artista (GET /artists/:id/albums)
+ */
+export const handleGetAlbumsByArtist = (context: Context) => {
+  const artistId = Number(context.params.id);
+  return handleRequest(() => getAlbumsByArtistId(artistId), context);
+}

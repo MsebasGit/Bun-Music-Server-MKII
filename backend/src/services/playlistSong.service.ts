@@ -32,17 +32,29 @@ export const insertPlaylistSong = async (
  */
 export const getSongsByPlaylistId = async (id_playlist: number): Promise<Song[]> => {
     
-    const result = await db
+    const songsData = await db
       .select({ 
-        // Solución robusta para seleccionar todas las columnas de la tabla 'songs'
-        ...getTableColumns(songs) 
+        id_song: songs.id,
+        title: songs.title,
+        language: songs.language,
+        release_date: songs.releaseDate,
+        duration: songs.duration,
+        song_path: songs.songPath,
+        cover_path: songs.coverPath,
+        id_album: songs.albumId,
+        genres: songs.genres,
       })
       .from(songs)
-      // Condiciones de JOIN actualizadas con nombres de columna CamelCase (id y songId)
       .innerJoin(playlistsToSongs, eq(songs.id, playlistsToSongs.songId)) 
       .where(eq(playlistsToSongs.playlistId, id_playlist)); 
       
-    return result as Song[]; 
+    return songsData.map(song => {
+        const { genres, ...restOfSong } = song;
+        return {
+            ...restOfSong,
+            genre: (genres && Array.isArray(genres) && genres.length > 0) ? genres[0] : '',
+        }
+    });
 };
 
 /**

@@ -1,91 +1,99 @@
-// src/services/userSongRating.service.ts
 import { db } from "../db";
-import { userSongRatings, songs, artists, songsToArtists, albums } from "../db/schema";
-import { eq, and, sql, count, desc, like, or } from "drizzle-orm";
+import { userSongRatings, songs, albums, artists, songsToArtists } from "../db/schema";
+import { eq, and, sql, or, like } from "drizzle-orm";
+import { handleDrizzleResult, handleDeleteResult } from "../utilities/validationUtils";
 
-// 1. DAR LIKE A UNA CANCIÓN (INSERT/UPDATE)
-export const likeSong = async (userId: number, songId: number) => {
-    // Intenta insertar. Si ya existe, actualiza 'isLiked' a true.
-    // Esto requiere una lógica de "upsert" que puede variar según la DB.
-    // Para SQLite, una forma es intentar una actualización y si no, insertar.
-    const existing = await db.select().from(userSongRatings)
-        .where(and(eq(userSongRatings.userId, userId), eq(userSongRatings.songId, songId)));
-
-    if (existing.length > 0) {
-        await db.update(userSongRatings)
-            .set({ isLiked: true })
-            .where(and(eq(userSongRatings.userId, userId), eq(userSongRatings.songId, songId)));
-    } else {
-        await db.insert(userSongRatings).values({ userId, songId, isLiked: true });
-    }
-    return { message: "Like añadido correctamente." };
-};
-
-// 2. QUITAR LIKE A UNA CANCIÓN (UPDATE)
-export const unlikeSong = async (userId: number, songId: number) => {
-    // Simplemente actualiza 'isLiked' a false
-    const result = await db.update(userSongRatings)
-        .set({ isLiked: false })
-        .where(and(eq(userSongRatings.userId, userId), eq(userSongRatings.songId, songId)))
-        .returning();
-    
-    if (result.length === 0) {
-        throw new Error("La canción no tenía like o no se pudo quitar.");
-    }
-    return { message: "Like quitado correctamente." };
-};
-
-// 3. OBTENER CANCIONES CON LIKE DE UN USUARIO
 export const getLikedSongsByUser = async (userId: number) => {
-    return await db.select({
-        song: songs,
-        artists: sql`GROUP_CONCAT(${artists.name})`.as('artists')
+    const result = await db.select({
+        id_song: songs.id,
+        title: songs.title,
+        cover_path: songs.coverPath,
+        album_name: albums.name,
+        artist_names: sql<string>`GROUP_CONCAT(${artists.name})`.as('artist_names')
     })
     .from(songs)
     .innerJoin(userSongRatings, eq(songs.id, userSongRatings.songId))
+    .leftJoin(albums, eq(songs.albumId, albums.id))
     .leftJoin(songsToArtists, eq(songs.id, songsToArtists.songId))
     .leftJoin(artists, eq(songsToArtists.artistId, artists.id))
-    .where(and(
-        eq(userSongRatings.userId, userId),
-        eq(userSongRatings.isLiked, true)
-    ))
-    .groupBy(songs.id)
-    .orderBy(desc(userSongRatings.interactionDate));
+    .where(eq(userSongRatings.userId, userId))
+    .groupBy(songs.id);
+
+    return result;
 };
 
-// 4. VERIFICAR SI UN USUARIO HA DADO LIKE A UNA CANCIÓN
-export const isSongLikedByUser = async (userId: number, songId: number) => {
-    const result = await db.select().from(userSongRatings)
-        .where(and(
-            eq(userSongRatings.userId, userId),
-            eq(userSongRatings.songId, songId),
-            eq(userSongRatings.isLiked, true)
-        ));
-    return result.length > 0;
-};
-
-// 5. CONTAR LIKES DE UNA CANCIÓN
-export const countLikesInSong = async (songId: number) => {
-    const result = await db.select({
-        likes: count(userSongRatings.userId)
-    })
-    .from(userSongRatings)
-    .where(and(
-        eq(userSongRatings.songId, songId),
-        eq(userSongRatings.isLiked, true)
-    ));
-    
-    return result[0]?.likes ?? 0;
-};
-
-// 6. BUSCAR EN CANCIONES CON LIKE
 export const searchLikedSongs = async (userId: number, searchTerm: string) => {
     const searchPattern = `%${searchTerm}%`;
+    
+    // Reutilizamos la lógica de unión pero con filtros
+    const result = await db.select({
+        id_song: songs.id,
+        title: songs.title,
+        cover_path: songs.coverPath,
+        album_name: albums.name,
+        artist_names: sql<string>`GROUP_CONCAT(${artists.name})`.as('artist_names')
+    })
+    .from(songs)
+    .innerJoin(userSongRatings, eq(songs.id, userSongRatings.songId))
+    .leftJoin(albums, eq(songs.albumId, albums.id))
+    .leftJoin(songsToArtists, eq(songs.id, songsToArtists.songId))
+    .leftJoin(artists, eq(songsToArtists.artistId, artists.id))
+    .where(
+        and(
+            eq(userSongRatings.userId, userId),
+            or(
+                like(songs.title, searchPattern),
+                like(albums.name, searchPattern),
+                like(artists.name, searchPattern)
+            )
+        )
+    )
+    .groupBy(songs.id);
 
-    // Similar al otro search, es complejo. Filtramos en la app.
-    const likedSongs = await getLikedSongsByUser(userId);
-    return likedSongs.filter(s => 
-        s.song.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (s.artists && s.artists.toLowerCase().includes(searchTerm.toLowerCase()))
-    );
-}
+    return result;
+};
+
+export const isSongLikedByUser = async (userId: number, songId: number) => {
+    const result = await db.select()
+        .from(userSongRatings)
+        .where(
+            and(
+                eq(userSongRatings.userId, userId),
+                eq(userSongRatings.songId, songId)
+            )
+        );
+    
+    return { is_liked: result.length > 0 };
+};
+
+export const countLikesInSong = async (songId: number) => {
+    const result = await db.select({
+        count: sql<number>`count(*)`
+    })
+    .from(userSongRatings)
+    .where(eq(userSongRatings.songId, songId));
+
+    return { cuantity_of_likes: Number(result[0]?.count || 0) };
+};
+
+export const likeSong = async (userId: number, songId: number) => {
+    // Usamos insert...onConflictDoNothing para evitar errores si ya existe
+    const result = await db.insert(userSongRatings)
+        .values({ userId, songId })
+        .returning();
+    
+    return handleDrizzleResult(result, "Like", "crear");
+};
+
+export const unlikeSong = async (userId: number, songId: number) => {
+    const result = await db.delete(userSongRatings)
+        .where(
+            and(
+                eq(userSongRatings.userId, userId),
+                eq(userSongRatings.songId, songId)
+            )
+        )
+        .returning();
+
+    return handleDeleteResult(result, "Like");
+};

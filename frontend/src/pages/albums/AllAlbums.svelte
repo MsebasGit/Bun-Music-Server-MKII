@@ -4,6 +4,7 @@
     import { albumApi } from "../../services/apiClient";
     import type { Album } from "../../types/api";
     import AlbumGrid from "../../components/album/AlbumGrid.svelte";
+    import SearchBar from "../../components/ui/SearchBar.svelte";
 
     let albums: Album[] = [];
     let loading: boolean = true;
@@ -18,6 +19,15 @@
         }
         loading = false;
     });
+    async function searchAlbums(text: string) {
+        const result = await albumApi.search(text)
+        console.log(result);
+        if (result.success) {
+            albums = result.data || [];
+        } else {
+            error = result.error || "Failed to fetch songs";
+        }
+    }
 </script>
 
 <div class="container mx-auto p-4">
@@ -25,6 +35,7 @@
     <Heading tag="h1" class="text-3xl font-bold mb-6 text-gray-900 dark:text-white">
         Todos los Álbumes
     </Heading>
+    <SearchBar onSearch={searchAlbums} />
     {#if loading}
         <div class="flex justify-center items-center h-40">
             <Spinner color="blue" size="8" />

@@ -4,6 +4,7 @@
     import { songApi } from "../services/apiClient";
     import type { Song } from "../types/api";
     import SongGrid from "../components/song/SongGrid.svelte";
+    import SearchBar from "../components/ui/SearchBar.svelte";
 
     let songs: Song[] = [];
     let loading: boolean = true;
@@ -18,13 +19,22 @@
         }
         loading = false;
     });
+    async function searchSongs(text: string) {
+        const result = await songApi.search(text)
+        console.log(result);
+        if (result.success) {
+            songs = result.data || [];
+        } else {
+            error = result.error || "Failed to fetch songs";
+        }
+    }
 </script>
 
 <div class="container mx-auto p-4">
     <Heading tag="h1" class="text-3xl font-bold mb-6 text-gray-900 dark:text-white">
         Todas las Canciones
     </Heading>
-
+    <SearchBar onSearch={searchSongs} />
     {#if loading}
         <div class="flex justify-center items-center h-40">
             <Spinner color="blue" size="8" />

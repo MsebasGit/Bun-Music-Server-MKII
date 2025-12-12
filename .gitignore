@@ -4,7 +4,8 @@ backend/node_modules/
 node_modules/ # Por si acaso se usan módulos a nivel de la raíz
 
 # Archivos específicos del backend
-# backend/sqlite.db
+backend/sqlite.db
+backend/public
 # backend/.env
 
 # Variables de entorno (general)

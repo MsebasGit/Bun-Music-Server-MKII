@@ -3,7 +3,8 @@ import {
   getPlaylistsByUserId, 
   createPlaylist,
   deletePlaylist,
-  updatePlaylist
+  updatePlaylist,
+  searchPlaylist
 } from '../services/playlist.service';
 import { handleRequest } from '../utilities/controllerUtils';
 
@@ -34,10 +35,17 @@ export const handleCreatePlaylist = (context: Context) =>
 // --- 3. DELETE PLAYLIST ---
 // Igual que antes: extraemos ID de la URL y ejecutamos.
 export const handleDeletePlaylist = (context: Context) => 
-  handleRequest(() => deletePlaylist(Number(context.params._id)), context);
+  handleRequest(() => deletePlaylist(Number(context.params.id)), context);
 
 
 // --- 4. UPDATE PLAYLIST ---
 // Combinamos ID de la URL + Body.
 export const handleUpdatePlaylist = (context: Context) => 
-  handleRequest((body) => updatePlaylist(Number(context.params._id), body), context);
+  handleRequest((body) => updatePlaylist(Number(context.params.id), body), context);
+
+// --- 5. SEARCH PLAYLIST ---
+export const handleSearchPlaylist = (context: Context) => {
+    const term = new URL(context.request.url).searchParams.get('term') || '';
+    const userId = (context as any).user.userId;
+    return handleRequest(() => searchPlaylist(term, userId), context);
+}
