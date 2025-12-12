@@ -8,6 +8,7 @@ import {
   handleDeleteAlbum,
   handleSearchAlbums,
 } from '../controllers/album.controller';
+import {handleSongsByAlbumId} from '../controllers/song.controller'
 import { authGuard } from '../guards/auth.guard';
 
 export const albumRoutes = new Elysia({ prefix: '/albums' })
@@ -19,6 +20,7 @@ export const albumRoutes = new Elysia({ prefix: '/albums' })
     .get('/', handleGetAlbums)
     .get('/search', handleSearchAlbums) // e.g., /api/v1/albums/search?q=name
     .get('/:id', handleGetAlbumById)
+    .get('/:id/songs', handleSongsByAlbumId)
 
     .post('/', handleCreateAlbum, {
       body: t.Object({
@@ -31,9 +33,9 @@ export const albumRoutes = new Elysia({ prefix: '/albums' })
     .put('/:id', handleUpdateAlbum, {
       body: t.Object({
         name: t.String({ minLength: 1 }),
-        cover_image: t.File({
+        cover_image: t.Optional(t.File({
           type: ['image/jpeg', 'image/png', 'image/webp']
-        }),
+        })),
       })
     })
     .delete('/:id', handleDeleteAlbum)

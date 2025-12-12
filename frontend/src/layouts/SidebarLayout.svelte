@@ -24,6 +24,8 @@
 
   import ArtistSongs from "../pages/artists/ArtistSongs.svelte";
   import ArtistAlbums from "../pages/artists/ArtistAlbums.svelte";
+  import MySongs from "../pages/songs/MySongs.svelte";
+  import MyAlbums from "../pages/albums/MyAlbums.svelte";
 </script>
 
 <div class="flex h-screen bg-gray-50 dark:bg-gray-800">
@@ -52,6 +54,12 @@
 
 
     <!-- User Related Routes -->
+    <Route path="/me/songs">
+      <MySongs />
+    </Route>
+    <Route path="/me/albums">
+      <MyAlbums />
+    </Route>
 
     <Route path="/favorites">
       <AllFavorites />

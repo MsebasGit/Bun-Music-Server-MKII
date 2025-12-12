@@ -1,5 +1,6 @@
 // src/utilities/fileUtils.ts
 import fs from 'fs';
+import { parseBuffer } from 'music-metadata';
 
 /**
  * Genera un nombre de archivo seguro y único (evitando conflictos y caracteres especiales).
@@ -87,3 +88,15 @@ export async function deleteFile(relativePath: string | null): Promise<void> {
         }
     }
 }
+
+/**
+ * Extracts the duration in seconds from an audio file.
+ * @param audio_file The audio file (File object).
+ * @returns The duration of the audio in seconds, rounded to the nearest second.
+ */
+export const extractAudioDuration = async (audio_file: File): Promise<number> => {
+    const arrayBuffer = await audio_file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    const metadata = await parseBuffer(buffer);
+    return Math.round(metadata.format.duration || 0);
+};

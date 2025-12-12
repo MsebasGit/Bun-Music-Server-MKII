@@ -1,4 +1,6 @@
 // src/utilities/controllerUtils.ts
+import camelcaseKeys from 'camelcase-keys';
+import snakecaseKeys from 'snakecase-keys';
 
 /**
  * Función de alto nivel para manejar peticiones de forma genérica y flexible.
@@ -16,18 +18,29 @@ export async function handleRequest<T, C extends { body: any; set: any }>(
   const { body, set } = context;
 
   try {
-    const result = await serviceFn(body);
+    // 1. Convertir body de snake_case a camelCase para el servicio
+    const camelCasedBody = typeof body === 'object' && body !== null 
+      ? camelcaseKeys(body, { deep: true }) 
+      : body;
+
+    const result = await serviceFn(camelCasedBody);
 
     if (onSuccess) {
       // Si se provee un manejador de éxito, se delega la respuesta a él.
+      // El manejador es responsable de su propia conversión de case si es necesario.
       return await onSuccess(result, context);
     }
+
+    // 2. Convertir respuesta de camelCase a snake_case para el frontend
+    const snakeCasedResult = typeof result === 'object' && result !== null
+      ? snakecaseKeys(result, { deep: true })
+      : result;
 
     // Respuesta de éxito por defecto.
     set.status = successStatus;
     return {
       message: "Operation successful",
-      data: result,
+      data: snakeCasedResult,
     };
   } catch (error: any) {
     if (error.message.includes("already exists")) {

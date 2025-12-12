@@ -13,6 +13,18 @@ export const handleGetSongsByArtistId = (context: Context) => {
     return handleRequest(() => getSongsByArtistId(artistId), context);
 };
 
+//  GET /api/v1/songs/me
+export const handleGetMySongsByArtist = (context: Context) => {
+        const artistId = (context as any).artist?.id;
+
+    if (!artistId) {
+        context.set.status = 403; // Forbidden
+        return { message: "Operation failed", error: "Only artists can have songs." };
+    }
+    return handleRequest(() => getSongsByArtistId(artistId), context);
+};
+
+
 // 2. GET /api/v1/songs/:id/artists
 export const handleGetArtistsBySongId = (context: Context) => {
     const songId = Number(context.params.id);

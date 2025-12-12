@@ -4,11 +4,10 @@ import { songs, albums, artists, songsToArtists, NewSong } from "../db/schema";
 import { eq, like, or, desc, sql, and } from "drizzle-orm";
 import { handleDrizzleResult, handleDeleteResult } from "../utilities/validationUtils";
 import { uploadAppImage, uploadSongFile } from '../utilities/storageUtils';
-import { parseBuffer } from 'music-metadata';
-import { deleteFile } from "../utilities/fileUtils";
+import { deleteFile, extractAudioDuration } from "../utilities/fileUtils";
 
 // Helper para no repetir la query base
-const _getSongsWithDetailsQuery = () => {
+const getSongsWithDetailsQuery = () => {
     return db.select({
         id_song: songs.id,
         title: songs.title,
@@ -30,21 +29,14 @@ const _getSongsWithDetailsQuery = () => {
 }
 
 // --- Helpers para createSong ---
-const _extractAudioMetadata = async (audio_file: File) => {
-    const arrayBuffer = await audio_file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
-    const metadata = await parseBuffer(buffer);
-    return Math.round(metadata.format.duration || 0);
-};
-
-const _uploadSongAssets = async (cover_image: File, audio_file: File) => {
+const uploadSongAssets = async (cover_image: File, audio_file: File) => {
     const coverPath = await uploadAppImage(cover_image, 'songs_covers');
     const audioPath = await uploadSongFile(audio_file, 'audio_files');
     return { coverPath, audioPath };
 };
 
 // --- Helper de autorización ---
-const _verifyArtistOwnership = async (songId: number, artistId: number) => {
+const verifyArtistOwnership = async (songId: number, artistId: number) => {
     const songOwnership = await db.select()
         .from(songsToArtists)
         .where(and(eq(songsToArtists.songId, songId), eq(songsToArtists.artistId, artistId)));
@@ -62,8 +54,8 @@ export const createSong = async (body: any, artistId: number) => {
         if (!artistId) throw new Error("El ID del artista es obligatorio y no se encontró en el token.");
 
         // Pasos 1 y 2: Extracción de metadatos y subida de archivos
-        const calculatedDuration = await _extractAudioMetadata(audio_file);
-        const { coverPath, audioPath } = await _uploadSongAssets(cover_image, audio_file);
+        const calculatedDuration = await extractAudioDuration(audio_file);
+        const { coverPath, audioPath } = await uploadSongAssets(cover_image, audio_file);
 
         // Paso 3: Transacción en DB
         const result = await db.transaction(async (tx) => {
@@ -102,20 +94,20 @@ export const createSong = async (body: any, artistId: number) => {
 
 // 2. OBTENER TODAS LAS CANCIONES (con artistas)
 export const getAllSongs = async () => {
-    const query = _getSongsWithDetailsQuery();
-    return await query.orderBy(desc(songs.id));
+    const query = getSongsWithDetailsQuery();
+    return await query.orderBy(desc(songs.releaseDate));
 };
 
 // 3. OBTENER CANCIÓN POR ID (con detalles)
 export const getSongById = async (id: number) => {
-    const query = _getSongsWithDetailsQuery();
+    const query = getSongsWithDetailsQuery();
     const result = await query.where(eq(songs.id, id));
     return handleDrizzleResult(result, "Canción", "obtener");
 };
 
 // 4. ACTUALIZAR CANCIÓN
 export const updateSong = async (id: number, data: Partial<NewSong>, artistId: number) => {
-    await _verifyArtistOwnership(id, artistId);
+    await verifyArtistOwnership(id, artistId);
     
     // Si se está actualizando el archivo de audio o la portada, habría que
     // borrar los antiguos. Por ahora, solo actualizamos los datos en la DB.
@@ -130,7 +122,7 @@ export const deleteSong = async (songId: number, artistId: number) => {
     
     return await db.transaction(async (tx) => {
         // 1. Verificar propiedad
-        await _verifyArtistOwnership(songId, artistId);
+        await verifyArtistOwnership(songId, artistId);
 
         // 2. Obtener las rutas de los archivos antes de borrar la canción
         const [songToDelete] = await tx.select({
@@ -161,7 +153,7 @@ export const searchSongs = async (searchTerm: string) => {
     const searchPattern = `%${searchTerm}%`;
 
     // Usamos la query base como una subquery para poder filtrar por los campos agregados
-    const subquery = _getSongsWithDetailsQuery().as('subquery');
+    const subquery = getSongsWithDetailsQuery().as('subquery');
 
     return await db.select()
         .from(subquery)
@@ -174,10 +166,9 @@ export const searchSongs = async (searchTerm: string) => {
         );
 };
 
-// ... (existing functions)
-
 // 7. OBTENER CANCIONES POR ÁLBUM
 export const getSongsByAlbumId = async (albumId: number) => {
+    
     return await db.select().from(songs).where(eq(songs.albumId, albumId));
 };
 

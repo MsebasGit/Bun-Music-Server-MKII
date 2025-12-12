@@ -1,5 +1,3 @@
-// frontend/src/types/api.ts
-
 export interface Song {
   id_song: number;
   title: string;
@@ -25,13 +23,13 @@ export interface Album {
 }
 
 export interface Artist {
-  id: number;
-  name: string;
+  id_artist: number;
+  name:string;
   nationality: string;
   biography: string;
-  debutDate: string | null;
-  userId: number;
-  socialLinks: { name: string; url: string; }[] | null;
+  debut_date: string | null;
+  id_user: number;
+  social_links: { name: string; url: string; }[] | null;
 }
 
 export interface User {
@@ -39,6 +37,8 @@ export interface User {
   name: string;
   email: string;
   creation_date: string;
+  is_artist: boolean;
+  id_artist: number;
 }
 
 export interface Comment {
@@ -55,9 +55,9 @@ export interface Playlist {
   id: number;
   name: string;
   description: string;
-  modificationDate: string;
-  creationDate: string;
-  userId: number;
+  modification_date: string;
+  creation_date: string;
+  id_user: number;
 }
 
 export interface SocialNetwork {

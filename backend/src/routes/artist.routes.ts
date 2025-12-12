@@ -16,11 +16,7 @@ export const artistRoutes = new Elysia({ prefix: '/artists' })
     .get('/', handleGetAllArtists)
     .get('/search', handleSearchArtists) // e.g., /api/v1/artists/search?q=nombre
     .get('/:id', handleGetArtistById)
-    .get('/:id/albums', handleGetAlbumsByArtist, {
-        params: t.Object({
-            id: t.Numeric()
-        })
-    })
+    .get('/:id/albums', handleGetAlbumsByArtist)
 
     // --- Rutas Protegidas ---
     .guard({

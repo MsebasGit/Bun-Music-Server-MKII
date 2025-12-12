@@ -1,7 +1,7 @@
 // src/routes/auth.routes.ts
 import { Elysia, t } from "elysia";
 import { jwt } from "@elysiajs/jwt";
-import { registerController, loginController, handleAuthStatus } from "../controllers/auth.controller";
+import { registerController, loginController, handleGetMeController } from "../controllers/auth.controller";
 import { authGuard } from "../guards/auth.guard";
 
 export const authRoutes = new Elysia({ prefix: "/auth" })
@@ -31,5 +31,5 @@ export const authRoutes = new Elysia({ prefix: "/auth" })
   .guard({
       beforeHandle: authGuard 
     },
-    (app) => app.get("/status", handleAuthStatus)
+    (app) => app.get("/me", handleGetMeController)
   );

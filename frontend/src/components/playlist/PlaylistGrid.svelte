@@ -1,16 +1,19 @@
 <script lang="ts">
     import type { Playlist } from "../../types/api";
     import PlaylistCard from "./PlaylistCard.svelte";
+    import Grid from "../ui/Grid.svelte";
 
-    // This component now receives the playlists as a prop and forwards events up.
     export let playlists: Playlist[] = [];
 
+    const handlePlaylistDeleted = (event: CustomEvent<{ id_playlist: number }>) => {
+        playlists = playlists.filter(p => p.id !== event.detail.id_playlist);
+    };
 </script>
 
-    <div
-        class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
-    >
-        {#each playlists as playlist (playlist.id)}
-            <PlaylistCard {playlist} on:playlistActionCompleted />
-        {/each}
-    </div>
+{#if playlists.length > 0}
+    <Grid items={playlists} let:item>
+        <PlaylistCard playlist={item} on:playlistDeleted={handlePlaylistDeleted} />
+    </Grid>
+{:else}
+    <p class="text-center text-gray-500 dark:text-gray-400">No se encontraron playlists.</p>
+{/if}

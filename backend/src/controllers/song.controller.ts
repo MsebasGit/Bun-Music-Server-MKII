@@ -5,8 +5,10 @@ import {
     createSong,
     updateSong,
     deleteSong,
-    searchSongs
+    searchSongs,
+    getSongsByAlbumId
 } from '../services/song.service';
+import { getLikedSongsByUser } from '../services/userSongRating.service'
 import { handleRequest } from '../utilities/controllerUtils';
 
 // --- 1. GET ALL (Wrapper simple) ---
@@ -14,6 +16,12 @@ import { handleRequest } from '../utilities/controllerUtils';
 export const handleGetSongs = (context: Context) =>
     handleRequest(() => getAllSongs(), context);
 
+export const handleGetFavoritesSong = (context: Context) =>
+  handleRequest(() => {
+    // Si tienes tipos personalizados para user, quita el 'as any'
+    const userId = (context as any).user.userId; 
+    return getLikedSongsByUser(userId);
+  }, context);
 
 // --- 2. GET BY ID (Extracción de params) ---
 // Usamos el closure para capturar el ID. 
@@ -67,6 +75,9 @@ export const handleDeleteSong = (context: Context) => {
     return handleRequest(() => deleteSong(songId, artistId), context);
 }
 
+export const handleSongsByAlbumId = (context: Context) => {
+    return handleRequest(() => getSongsByAlbumId(Number(context.params.id)), context);
+}
 
 // --- 6. SEARCH (Query Params) ---
 // Simplificamos la extracción del query param.
