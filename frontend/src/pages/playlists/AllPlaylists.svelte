@@ -5,6 +5,7 @@
     import type { Playlist } from "../../types/api";
     import PlaylistGrid from "../../components/playlist/PlaylistGrid.svelte";
     import NewPlaylist from "../../components/playlist/NewPlaylist.svelte";
+    import SearchBar from "../../components/ui/SearchBar.svelte";
 
     let playlists: Playlist[] = [];
     let loading: boolean = true;
@@ -30,7 +31,15 @@
         playlists = [...playlists, newPlaylist];
         showCreatePopover = false; // Close the popover
     }
-
+    async function searchArtists(text: string) {
+        const result = await playlistApi.search(text)
+        console.log(result);
+        if (result.success) {
+            playlists = result.data || [];
+        } else {
+            error = result.error || "Failed to fetch songs";
+        }
+    }
     // Handles full refresh for edit/delete
     function refreshList() {
         fetchPlaylists();
@@ -59,6 +68,7 @@
         </div>
     </div>
 
+    <SearchBar onSearch={searchArtists} />
 
     {#if loading && playlists.length === 0}
         <div class="flex justify-center items-center h-40">

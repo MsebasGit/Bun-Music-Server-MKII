@@ -3,17 +3,24 @@
   import { onDestroy } from 'svelte';
   import { Route, router } from "tinro";
   import { auth } from "./stores/auth";
+  import { likedSongsStore } from "./stores/likesStore"; // <--- Importado
 
   // Componentes
   import Login from "./pages/users/Login.svelte";
   import Register from "./pages/users/Register.svelte";
   import SidebarLayout from "./layouts/SidebarLayout.svelte";
 
-
-  // Evitar usar `$auth` dentro de callbacks (no está permitido por Svelte).
-  // Nos suscribimos explícitamente y guardamos el valor en `isAuth`.
   let isAuth = false;
-  const unsubscribeAuth = auth.subscribe((v) => (isAuth = v));
+
+  // Suscripción al store de autenticación
+  const unsubscribeAuth = auth.subscribe((v) => {
+    isAuth = v;
+    
+    // Si el usuario se acaba de autenticar, cargamos sus likes automáticamente
+    if (isAuth) {
+      likedSongsStore.fetchInitialLikes();
+    }
+  });
 
   const unsubscribeRouter = router.subscribe((route) => {
     if (route.path !== '/login' && route.path !== '/signup' && !isAuth) {

@@ -65,7 +65,7 @@ export const handleDeleteArtist = (context: Context) => {
 
 // 6. BUSCAR ARTISTAS
 export const handleSearchArtists = (context: Context) => {
-    const term = new URL(context.request.url).searchParams.get('q') || '';
+    const term = new URL(context.request.url).searchParams.get('term') || '';
     return handleRequest(() => searchArtists(term), context);
 }
 

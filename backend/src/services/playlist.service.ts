@@ -1,7 +1,7 @@
 // src/services/playlist.service.ts
 import { db } from "../db";
 import { playlists, NewPlaylist } from "../db/schema";
-import { eq } from "drizzle-orm";
+import { eq, like, desc, and } from "drizzle-orm";
 import { handleDrizzleResult, handleDeleteResult } from "../utilities/validationUtils";
 
 // OBTENER PLAYLISTS POR USUARIO
@@ -24,6 +24,17 @@ export const getPlaylistById = async (playlistId: number) => {
     const result = await db.query.playlists.findFirst({ where: eq(playlists.id, playlistId) });
     if (!result) throw new Error("Playlist no encontrada");
     return result;
+};
+// BUSCAR PLAYLIST
+export const searchPlaylist = async (searchTerm: string, userId: number) => {
+    const searchPattern = `%${searchTerm}%`;
+    return await db.select()
+        .from(playlists)
+        .where(and(
+          like(playlists.name, searchPattern), 
+          eq(playlists.userId, userId))
+        )
+        .orderBy(desc(playlists.name));
 };
 
 // ACTUALIZAR PLAYLIST

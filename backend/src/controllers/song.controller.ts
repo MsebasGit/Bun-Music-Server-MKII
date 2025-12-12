@@ -7,6 +7,7 @@ import {
     deleteSong,
     searchSongs
 } from '../services/song.service';
+import { getLikedSongsByUser } from '../services/userSongRating.service'
 import { handleRequest } from '../utilities/controllerUtils';
 
 // --- 1. GET ALL (Wrapper simple) ---
@@ -14,6 +15,12 @@ import { handleRequest } from '../utilities/controllerUtils';
 export const handleGetSongs = (context: Context) =>
     handleRequest(() => getAllSongs(), context);
 
+export const handleGetFavoritesSong = (context: Context) =>
+  handleRequest(() => {
+    // Si tienes tipos personalizados para user, quita el 'as any'
+    const userId = (context as any).user.userId; 
+    return getLikedSongsByUser(userId);
+  }, context);
 
 // --- 2. GET BY ID (Extracción de params) ---
 // Usamos el closure para capturar el ID. 
@@ -74,6 +81,6 @@ export const handleSearchSongs = (context: Context) =>
     handleRequest(() => {
         // En Elysia, puedes acceder a query params más fácil si usas el plugin, 
         // pero manteniendo tu lógica original de URL raw:
-        const term = new URL(context.request.url).searchParams.get('q') || '';
+        const term = new URL(context.request.url).searchParams.get('term') || '';
         return searchSongs(term);
     }, context);

@@ -9,18 +9,10 @@ import { songRoutes } from "./routes/songs.routes";
 import { artistSongRoutes } from "./routes/artistSong.routes";
 import { artistRoutes } from "./routes/artist.routes";
 import { playlistSongRoutes } from "./routes/playlistSong.routes";
-
-
-// DEBUG: Esto nos dirá exactamente dónde cree Bun que está
-console.log("📂 Directorio de trabajo actual:", process.cwd());
-
-// DEBUG: 
-
+// 1. Importamos las nuevas rutas de ratings/likes
+import { userSongRatingRoutes } from "./routes/userSongRating.routes";
 
 const app = new Elysia()
-  // CORRECCIÓN MAESTRA:
-  // Decimos: "Toma la carpeta 'public' y sirve su contenido en la raíz '/'"
-  // Resultado: Petición a "/img/foto.jpg" -> Busca en "public/img/foto.jpg"
   .use(staticPlugin({ 
       assets: 'public', 
       prefix: '/' 
@@ -35,6 +27,8 @@ const app = new Elysia()
       .use(songRoutes)
       .use(artistRoutes)
       .use(artistSongRoutes)
+      // 2. Registramos la ruta en el grupo de la API
+      .use(userSongRatingRoutes)
   )
   .get("/", () => "Welcome to Music Server API!")
   .listen(3000);

@@ -69,7 +69,7 @@ export const handleDeleteAlbum = (context: Context) => {
  * 6. Buscar Álbumes (GET /albums/search)
  */
 export const handleSearchAlbums = (context: Context) => {
-  const term = new URL(context.request.url).searchParams.get('q') || '';
+  const term = new URL(context.request.url).searchParams.get('term') || '';
   return handleRequest(() => searchAlbums(term), context);
 }
 

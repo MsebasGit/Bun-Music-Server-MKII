@@ -4,6 +4,7 @@
     import { artistApi } from "../../services/apiClient";
     import type { Artist } from "../../types/api";
     import ArtistGrid from "../../components/artist/ArtistGrid.svelte";
+    import SearchBar from "../../components/ui/SearchBar.svelte";
 
     let artists: Artist[] = [];
     let loading: boolean = true;
@@ -18,6 +19,15 @@
         }
         loading = false;
     });
+    async function searchArtists(text: string) {
+        const result = await artistApi.search(text)
+        console.log(result);
+        if (result.success) {
+            artists = result.data || [];
+        } else {
+            error = result.error || "Failed to fetch songs";
+        }
+    }
 </script>
 
 <div class="container mx-auto p-4">
@@ -28,6 +38,7 @@
     >
         Todos los Artistas
     </Heading>
+    <SearchBar onSearch={searchArtists} />
 
     {#if loading}
         <div class="flex justify-center items-center h-40">

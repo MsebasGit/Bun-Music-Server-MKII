@@ -5,7 +5,9 @@ import {
   handleGetSongs,
   handleCreateSong, 
   handleUpdateSong,
-  handleDeleteSong
+  handleDeleteSong,
+  handleGetFavoritesSong,
+  handleSearchSongs
 } from "../controllers/song.controller"; // Import new controller
 
 
@@ -19,6 +21,8 @@ export const songRoutes = new Elysia({ prefix: "/songs" })
     (app) =>
       app
         .get("/", handleGetSongs)
+        .get("/favorites", handleGetFavoritesSong)
+        .get("/search", handleSearchSongs)
         // POST /api/v1/songs
         .post("/", handleCreateSong, {
           body: t.Object({

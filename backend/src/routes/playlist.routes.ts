@@ -5,7 +5,8 @@ import {
   handleCreatePlaylist, 
   handleGetMyPlaylists,
   handleUpdatePlaylist,
-  handleDeletePlaylist
+  handleDeletePlaylist,
+  handleSearchPlaylist
 } from "../controllers/playlist.controller"; // Import new controller
 
 export const playlistRoutes = new Elysia({ prefix: "/playlists" })
@@ -18,6 +19,7 @@ export const playlistRoutes = new Elysia({ prefix: "/playlists" })
       app
         // GET /api/v1/playlists/me
         .get("/me", handleGetMyPlaylists)
+        .get('/search', handleSearchPlaylist)
         // POST /api/v1/playlists
         .post("/", handleCreatePlaylist, {
           body: t.Object({
