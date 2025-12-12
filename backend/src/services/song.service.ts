@@ -25,7 +25,8 @@ const getSongsWithDetailsQuery = () => {
     .leftJoin(albums, eq(songs.albumId, albums.id))
     .leftJoin(songsToArtists, eq(songs.id, songsToArtists.songId))
     .leftJoin(artists, eq(songsToArtists.artistId, artists.id))
-    .groupBy(songs.id);
+    .groupBy(songs.id)
+
 }
 
 // --- Helpers para createSong ---
@@ -106,14 +107,49 @@ export const getSongById = async (id: number) => {
 };
 
 // 4. ACTUALIZAR CANCIÓN
-export const updateSong = async (id: number, data: Partial<NewSong>, artistId: number) => {
+// 4. ACTUALIZAR CANCIÓN
+export const updateSong = async (id: number, data: Partial<NewSong> & { cover_image?: any, audio_file?: any }, artistId: number) => {
+    // 1. Verificar la propiedad del artista
     await verifyArtistOwnership(id, artistId);
-    
-    // Si se está actualizando el archivo de audio o la portada, habría que
-    // borrar los antiguos. Por ahora, solo actualizamos los datos en la DB.
-    // Esta lógica puede expandirse en el futuro.
 
-    const result = await db.update(songs).set(data).where(eq(songs.id, id)).returning();
+    const { cover_image, audio_file, ...songDataToUpdate } = data;
+    let newCoverPath: string | undefined = undefined;
+
+    const [existingSong] = await db
+        .select({ 
+            songPath: songs.songPath, 
+            coverPath: songs.coverPath 
+        })
+        .from(songs)
+        .where(eq(songs.id, id))
+        .limit(1);
+
+    if (!existingSong) {
+        throw new Error("Canción no encontrada.");
+    }
+
+    if (cover_image) {
+        const uploadedPath = await uploadAppImage(cover_image, 'songs_covers');
+
+        if (uploadedPath) {
+            newCoverPath = uploadedPath;
+            if (existingSong.coverPath) {
+                await deleteFile(existingSong.coverPath); 
+            }
+        }
+    }
+    const finalUpdateData: Partial<NewSong> = {
+        ...songDataToUpdate,
+        ...(newCoverPath && { coverPath: newCoverPath }),
+    };
+
+    console.log("Datos de actualización final:", finalUpdateData);
+
+    const result = await db.update(songs)
+        .set(finalUpdateData)
+        .where(eq(songs.id, id))
+        .returning();
+
     return handleDrizzleResult(result, "Canción", "actualizar");
 };
 

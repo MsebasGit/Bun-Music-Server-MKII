@@ -79,9 +79,25 @@ export const getAlbumById = async (id: number) => {
 };
 
 // 4. ACTUALIZAR UN ÁLBUM
-export const updateAlbum = async (id: number, body: Partial<NewAlbum>) => {
+export const updateAlbum = async (id: number, body: any) => {
+    const { name, cover_image } = body;
+    var cover_path = await uploadAppImage(cover_image, 'album_covers');
+    if (cover_path == null) {
+        const existingAlbum = await db.select({ 
+            coverPath: albums.coverPath 
+        }).from(albums).where(eq(albums.id, id)).limit(1);
+        if (existingAlbum && existingAlbum.length > 0) {
+            cover_path = existingAlbum[0].coverPath; // <--- ASIGNAS EL VALOR STRING REAL
+        } else {
+            throw new Error(`Álbum con ID ${id} no encontrado.`);
+        }
+    }
+    const albumData: Partial<NewAlbum> = {
+        name,
+        coverPath: cover_path, 
+    };
     const result = await db.update(albums)
-        .set(body)
+        .set(albumData)
         .where(eq(albums.id, id))
         .returning();
 
